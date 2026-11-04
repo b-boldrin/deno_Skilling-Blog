@@ -34,7 +34,7 @@ export const createUser = async (req: Request, res: Response) => {
     
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteHimselfUser = async (req: Request, res: Response) => {
     
 };
 

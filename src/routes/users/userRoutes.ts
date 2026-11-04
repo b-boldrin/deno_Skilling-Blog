@@ -1,8 +1,6 @@
 import express from "express";
 import * as userController from "../../controllers/userController.ts";
 import responserModule from "responser";
-import {validatorCreateSkill} from "../../middleware/validators.ts";
-import {validatorDeleteSkill} from "../../middleware/validators.ts";
 
 const responser = responserModule.default;
 
@@ -13,6 +11,6 @@ router.use(responser);
 router.post("/users", userController.createUser);
 router.get("/users", userController.getAllUsers);
 router.put("/users", userController.updateUser);
-router.delete("/users", userController.deleteUser);
+router.delete("/users", userController.deleteHimselfUser);
 
 export default router;
