@@ -29,10 +29,7 @@ export default function authMiddleware(
     const [scheme, token] = authHeader.split(' ');
 
     if (scheme !== 'Bearer' || !token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Formato de token inválido'
-      });
+      return next( res.err_unauthorized('Token inválido'))
     }
 
     const secret = Deno.env.get('JWT_SECRET');
@@ -47,10 +44,7 @@ export default function authMiddleware(
       typeof decoded === 'string' ||
       typeof decoded.id !== 'string'
     ) {
-      return res.status(401).json({
-        success: false,
-        message: 'Token inválido'
-      });
+      return next(res.err_unauthorized('Token inválido'));
     }
 
     req.user = {
@@ -63,22 +57,13 @@ export default function authMiddleware(
     if (
       error instanceof jwt.TokenExpiredError
     ) {
-      return res.status(401).json({
-        success: false,
-        message: 'Token expirado'
-      });
+      return next(res.err_unauthorized('Token expirado'));
     }
 
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({
-        success: false,
-        message: 'Token inválido'
-      });
+      return next(res.err_unauthorized('Token inválido'));
     }
 
-    return res.status(500).json({
-      success: false,
-      message: 'Erro interno na autenticação'
-    });
+    next(error)
   }
 }

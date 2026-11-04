@@ -65,11 +65,7 @@ export function validatorCreateSkill(req : Request, res : Response, next : NextF
     );
 
   if (errors) {
-    return res.status(400).json({
-      success: false,
-      message: 'Erro de validação',
-      errors
-    });
+    return next(res.err_badRequest('Erro de validação', errors));
   }
 
   next();
@@ -83,11 +79,7 @@ export function validatorDeleteSkill(req : Request, res : Response, next : NextF
     );
 
   if (errors) {
-    return res.status(400).json({
-      success: false,
-      message: 'Erro de validação',
-      errors
-    });
+    return next(res.err_badRequest('Erro de validação', errors));
   }
 
   next();
@@ -102,11 +94,7 @@ export function validatorCreateUser(req : Request, res : Response, next : NextFu
     );
 
   if (errors) {
-    return res.status(400).json({
-      success: false,
-      message: 'Erro de validação',
-      errors
-    });
+    return next(res.err_badRequest('Erro de validação', errors));
   }
 
   next();

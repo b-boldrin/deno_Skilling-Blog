@@ -1,31 +1,20 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction} from "express";
 import * as authService from "../services/authService.ts";
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-    const loginResult = await authService.checkLogin(req.body);
+    const loginResult = await authService.checkLogin(req.body) as { isPasswordValid: boolean; token: string };
 
-    if (!loginResult || !loginResult.isPasswordValid) {
-        return res.status(401).json({
-            success: false,
-            message: 'Credenciais inválidas'
-        });
+    if (!loginResult.isPasswordValid) {
 
+         return next(res.err_unauthorized("Credenciais inválidas"));
     }
 
     const { token } = loginResult;
 
     
-    return res.status(200).json({
-        message: 'Login realizado com sucesso',
-        success: true,
-      token
-    });
+    return res.send_ok('Login realizado com sucesso', { token });
 
     } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Erro interno do servidor'
-    });
-    
+       return next(error)
 } }

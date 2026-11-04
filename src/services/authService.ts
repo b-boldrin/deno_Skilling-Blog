@@ -19,7 +19,7 @@ export const checkLogin = async (userData : UserData) => {
     const token = jwt.sign({ id: user._id.toString() }, Deno.env.get("JWT_SECRET")!, { expiresIn: '15m' });
 
 
-    return { isPasswordValid, token };
+    return { isPasswordValid, token } as { isPasswordValid: boolean; token: string };
 
 };
 
