@@ -2,8 +2,6 @@ import Skill from "../models/Skill.ts";
 import sendSkillData from "../types/SkillData.ts";
 import getSkillData from "../types/SkillData.ts";
 
-
-
 export const findAll = async (page? : number) => {
 
     if (!page) {
@@ -19,12 +17,7 @@ export const findAll = async (page? : number) => {
 
     console.log(skills)
 
-
-    
-
     return skills
-
-// return await User.find();
 };
 
 export const create = async (skillData : sendSkillData) => {
@@ -38,18 +31,3 @@ export const remove = async (skillData : getSkillData) => {
 
     return deletedSkill;
 };
-
-
-
-
-
-
-
-
-  
-
-//     const newSkill = await Skill.create({
-//   "content": "Desenvolvimento de APIs REST utilizando Node.js, Express e MongoDB com Mongoose. Conhecimento em criação de rotas, controllers, models, autenticação JWT e operações CRUD.",
-// "tags": ["JavaScript", "Node.js", "MongoDB", "Backend"],
-//   "author": "João Silva"
-// })

@@ -32,11 +32,12 @@ export const create = async (userData : UserData) => {
 }
 
     const newUser = new User(userData);
-    return await newUser.save();
+    await newUser.save();
+    return newUser;
 };
 
-export const remove = async (userData : UserData) => {
-    const deletedUser = await User.deleteOne({_id: userData._id});
+export const removeById = async (id : string) => {
+    const deletedUser = await User.deleteOne({_id: id});
 
     return deletedUser;
 };
@@ -46,6 +47,23 @@ export const getByEmail = async (email: string) => {;
 
     return await User.findOne({ email }).select('+password');
 };
+
+export const getLastPasswordByIdAndEmail = async (id: string, email: string) => {
+    
+    return await User.findOne({ _id: id, email: email }).select('+password'); 
+
+}
+
+
+export const updatePassword = async (userData : UserData) => {
+
+    const updatedUser = await User.updateOne({_id: userData._id, email: userData.email }, { $set: { password: userData.password } });
+
+    return Boolean(updatedUser.modifiedCount);
+};
+
+
+
 
 
 

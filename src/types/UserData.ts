@@ -8,5 +8,6 @@ export default interface UserData {
 
     password: string
 
+    lastPassword?: string
 
 }
