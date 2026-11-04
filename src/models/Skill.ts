@@ -5,7 +5,13 @@ const skillSchema = new mongoose.Schema({
     
     tags : {
         type: [String],
-        require: true
+        require: true,
+        validate: [
+            {validator: (value: string[]) => Array.isArray(value) && value.length > 0,
+            message: 'As tags são obrigatórias'},
+            {validator: (value: string[]) => value.every(tag => tag.trim().length > 0),
+            message: 'As tags não podem ser vazias'}
+        ]
     },
 
      

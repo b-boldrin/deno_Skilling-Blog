@@ -33,6 +33,13 @@ rc.addRule('content', {
 });
 
 
+rc.addRule('_id', {
+  validator: (value : string) => isFilled(value),
+  message: 'O identificador _id é obrigatório'
+});
+
+
+
 rc.addRule('tags', {
   validator: (value: unknown) => Array.isArray(value) && value.length > 0,
   message: 'As tags são obrigatórias'
@@ -48,17 +55,32 @@ rc.addRule('email', {
   message: 'E-mail inválido'
 });
 
-
-
-
-
-export default function validateRequest(req : Request, res : Response, next : NextFunction) {
+export function validatorCreateSkill(req : Request, res : Response, next : NextFunction) {
   const { content, tags } = req.body;
 
     
     const errors = rc.check(
     { content },
     { tags }
+    );
+
+  if (errors) {
+    return res.status(400).json({
+      success: false,
+      message: 'Erro de validação',
+      errors
+    });
+  }
+
+  next();
+}
+
+export function validatorDeleteSkill(req : Request, res : Response, next : NextFunction) {
+  const { _id } = req.body;
+
+    
+    const errors = rc.check(
+    { _id }
     );
 
   if (errors) {
