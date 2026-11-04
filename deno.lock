@@ -6,6 +6,7 @@
     "jsr:@zarco/isness@~0.1.18": "0.1.18",
     "npm:express@^5.3.0": "5.3.0",
     "npm:mongoose@^9.11.4": "9.11.4",
+    "npm:request-check@^1.6.2": "1.6.2",
     "npm:responser@^2.5.6": "2.5.6"
   },
   "jsr": {
@@ -366,6 +367,9 @@
         "unpipe"
       ]
     },
+    "request-check@1.6.2": {
+      "integrity": "sha512-ps2RkFntTI5mT1iQR0KLP2M/ptyiyw4Z6pVfai9uHfQlIxa0NA3MBiNCaQ8+/mK/n3ZOZ1lLfMbLHqjxsDA9Mg=="
+    },
     "responser@2.5.6": {
       "integrity": "sha512-CAf7EE9rty9yIzIcIj7Ukcq9nR+Uj3pFXcDESB1etwIa9S1FdNXhECepmShdbFwlJ8lsX7MDjvvredesGwhMJQ==",
       "dependencies": [
@@ -504,6 +508,7 @@
       "jsr:@zarco/isness@~0.1.18",
       "npm:express@^5.3.0",
       "npm:mongoose@^9.11.4",
+      "npm:request-check@^1.6.2",
       "npm:responser@^2.5.6"
     ]
   }

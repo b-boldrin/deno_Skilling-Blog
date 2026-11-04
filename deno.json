@@ -10,6 +10,7 @@
     "@zarco/isness": "jsr:@zarco/isness@^0.1.18",
     "express": "npm:express@^5.3.0",
     "mongoose": "npm:mongoose@^9.11.4",
+    "request-check": "npm:request-check@^1.6.2",
     "responser": "npm:responser@^2.5.6"
   }
 }
