@@ -25,4 +25,29 @@ export const createSkill = async (req: Request, res: Response) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const deleteSkill = async (req: Request, res: Response) => {
+    try {
+
+        const deletedSkill = await skillService.removeSkill(req.body);
+
+        res.send_ok(deletedSkill);
+
+    } catch (err) {
+        const error = err as Error;
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const createUser = async (req: Request, res: Response) => {
+    
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+    
+};
+
+export const loginUser = async (req: Request, res: Response) => {
+    
+};
     

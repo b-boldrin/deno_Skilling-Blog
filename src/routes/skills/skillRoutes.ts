@@ -11,5 +11,7 @@ router.use(responser);
 
 router.get("/skills", skillController.getAllSkills);
 router.post("/skills", validateRequest, skillController.createSkill);
+router.delete("/skills", skillController.deleteSkill);
+router.post("/login", skillController.loginUser);
 
 export default router;

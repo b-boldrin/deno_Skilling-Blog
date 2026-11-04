@@ -1,5 +1,7 @@
 import Skill from "../models/Skill.ts";
-import SkillData from "../types/SkillData"
+import sendSkillData from "../types/SkillData";
+import getSkillData from "../types/SkillData";
+
 
 
 
@@ -28,10 +30,24 @@ export const findAll = async (page? : number) => {
 
 // return await User.find();
 };
-export const create = async (skillData : SkillData) => {
-const newSkill = new Skill(skillData);
-return await newSkill.save();
+
+export const create = async (skillData : sendSkillData) => {
+    const newSkill = new Skill(skillData);
+
+    return await newSkill.save();
 };
+
+export const remove = async (skillData : getSkillData) => {
+    const deletedSkill = await Skill.deleteOne({_id: skillData._id});
+
+    return deletedSkill;
+};
+
+
+
+
+
+
 
 
   
