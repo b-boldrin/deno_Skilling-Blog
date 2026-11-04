@@ -1,5 +1,5 @@
 import UserData from "../types/UserData.ts";
-import bcrypt from 'npm:bcrypt';
+import bcrypt from 'bcrypt';
 
 
 import * as userRepository from "../repositories/userRepository.ts";

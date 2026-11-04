@@ -1,7 +1,7 @@
 import UserData from "../types/UserData.ts";
 import * as userRepository from "../repositories/userRepository.ts";
-import bcrypt from 'npm:bcrypt';
-import jwt from 'npm:jsonwebtoken';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 
 

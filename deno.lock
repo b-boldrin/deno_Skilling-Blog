@@ -5,11 +5,14 @@
     "jsr:@std/internal@^1.0.12": "1.0.14",
     "jsr:@zarco/isness@~0.1.18": "0.1.18",
     "npm:bcrypt@*": "6.0.0",
+    "npm:bcrypt@6": "6.0.0",
     "npm:express@^5.3.0": "5.3.0",
     "npm:jsonwebtoken@*": "9.0.3",
+    "npm:jsonwebtoken@^9.0.3": "9.0.3",
     "npm:mongoose@^9.11.4": "9.11.4",
     "npm:request-check@^1.6.2": "1.6.2",
-    "npm:responser@^2.5.6": "2.5.6"
+    "npm:responser@^2.5.6": "2.5.6",
+    "npm:throwlhos@^1.1.0": "1.1.0"
   },
   "jsr": {
     "@std/assert@1.0.19": {
@@ -549,6 +552,12 @@
     "statuses@2.0.2": {
       "integrity": "sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw=="
     },
+    "throwlhos@1.1.0": {
+      "integrity": "sha512-xTe9LuqNSy3wZA9J4BSG/Q81D61KuV+Q91tQWfcULf50vBzA8ga0h9tti16bFxDMZ45a8tghbuWZxDSTZ5o/sw==",
+      "dependencies": [
+        "http-status-codes"
+      ]
+    },
     "toidentifier@1.0.1": {
       "integrity": "sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA=="
     },
@@ -590,10 +599,13 @@
     "dependencies": [
       "jsr:@std/assert@1",
       "jsr:@zarco/isness@~0.1.18",
+      "npm:bcrypt@6",
       "npm:express@^5.3.0",
+      "npm:jsonwebtoken@^9.0.3",
       "npm:mongoose@^9.11.4",
       "npm:request-check@^1.6.2",
-      "npm:responser@^2.5.6"
+      "npm:responser@^2.5.6",
+      "npm:throwlhos@^1.1.0"
     ]
   }
 }

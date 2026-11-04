@@ -45,6 +45,18 @@ export const updateUser = async (req: Request, res: Response) => {
 
 
 export const getAllUsers = async (req: Request, res: Response) => {
+
+    try {
+        const users = await userService.getAllUsers();
+        
+        res.send_ok("Usuários Encontrados:", users);
+    }
+    catch (err) {
+        const error = err as Error;
+        res.status(500).json({ error: error.message });
+    }
+    
+
     
 };
 

@@ -10,7 +10,7 @@ export const findAll = async (page? : number) => {
 
     const limit = 20
 
-    const users = await User.find().sort({createdAt: -1})
+    const users = await User.find({},{username: 1, _id:0}).sort({createdAt: -1})
     .skip((page - 1) * limit)
     .limit(limit)
     .lean()
