@@ -14,6 +14,4 @@ router.get("/skills", skillController.getAllSkills);
 router.post("/skills", validatorCreateSkill, skillController.createSkill);
 router.delete("/skills", validatorDeleteSkill, skillController.deleteSkill);
 
-router.post("/login", skillController.loginUser);
-
 export default router;

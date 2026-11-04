@@ -1,10 +1,6 @@
 import Skill from "../models/Skill.ts";
-import sendSkillData from "../types/SkillData";
-import getSkillData from "../types/SkillData";
-
-
-
-
+import sendSkillData from "../types/SkillData.ts";
+import getSkillData from "../types/SkillData.ts";
 
 
 

@@ -45,9 +45,9 @@ rc.addRule('tags', {
   message: 'As tags são obrigatórias'
 });
 
-rc.addRule('name', {
+rc.addRule('username', {
   validator: (value : string) => isness.fullName(value),
-  message: 'O Nome é obrigatório'
+  message: 'O Username é obrigatório'
 });
 
 rc.addRule('email', {
@@ -78,7 +78,6 @@ export function validatorCreateSkill(req : Request, res : Response, next : NextF
 export function validatorDeleteSkill(req : Request, res : Response, next : NextFunction) {
   const { _id } = req.body;
 
-    
     const errors = rc.check(
     { _id }
     );
@@ -93,4 +92,24 @@ export function validatorDeleteSkill(req : Request, res : Response, next : NextF
 
   next();
 }
+
+export function validatorCreateUser(req : Request, res : Response, next : NextFunction) {
+  const { username, email } = req.body;
+    
+    const errors = rc.check(
+    { username },
+    { email }
+    );
+
+  if (errors) {
+    return res.status(400).json({
+      success: false,
+      message: 'Erro de validação',
+      errors
+    });
+  }
+
+  next();
+}
+
 

@@ -6,7 +6,6 @@ Falta:
 Fazer Logs,
 Gerenciar Erros,
 Preparar Testes,
-Adicionar JWT,
+# Adicionar JWT,
 Adicionar Transactions,
 Fazer README
-Implementar 
