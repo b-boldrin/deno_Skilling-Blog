@@ -5,6 +5,8 @@ import userRouter from "./routes/users/userRoutes.ts";
 import authRouter from "./routes/login/loginRoutes.ts";
 import responserModule from "responser"
 import throwlhosModule from "throwlhos"
+import morgan from "morgan"
+
 
 
 const throwlhos = (
@@ -21,6 +23,8 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(morgan("dev"))
 
 app.use(throwlhos.middleware);
 app.use(responser);

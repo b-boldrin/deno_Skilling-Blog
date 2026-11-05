@@ -2,7 +2,7 @@ interface UpdatePasswordData {
     _id: string;
     email: string;
     password: string;
-    lastPassword: string;
+    newPassword: string;
 }
 
 export default UpdatePasswordData;

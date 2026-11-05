@@ -49,7 +49,7 @@ export const createUserService = (
         userData: {
             email: string;
             password: string;
-            lastPassword: string;
+            newPassword: string;
             _id: string;
         }
     ) => {
@@ -64,7 +64,7 @@ export const createUserService = (
         }
 
         const isSamePassword = await bcrypt.compare(
-            userData.lastPassword,
+            userData.password,
             lastPassword.password
         );
 
@@ -73,7 +73,7 @@ export const createUserService = (
         }
 
         const isSameAsLastPassword = await bcrypt.compare(
-            userData.password,
+            userData.newPassword,
             lastPassword.password
         );
 
@@ -81,7 +81,7 @@ export const createUserService = (
             throw new Error("A nova senha não pode ser igual a senha antiga");
         }
 
-        const hashedPassword = await bcrypt.hash(userData.password, 12);
+        const hashedPassword = await bcrypt.hash(userData.newPassword, 12);
 
         return await repository.updatePassword({
             ...userData,

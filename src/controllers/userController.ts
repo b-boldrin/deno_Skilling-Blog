@@ -19,7 +19,7 @@ export const createUserController = (
                 const newUser = await userService.createUser(req.body, currSession);
 
                 if (newUser === false) {
-                    return next(res.err_conflict("E-mail ou username já cadastrado"));
+                    return next(res.err_conflict("E-mail ou username já cadastrado", {username: req.body.username, email: req.body.email}));
                 }
 
                 const skillData: sendSkillData = {
@@ -35,7 +35,7 @@ export const createUserController = (
                     await skillService.createSkill(skillData, currSession);
                 }
 
-                return res.send_created("Usuário criado com sucesso", newUser.username);
+                return res.send_created("Usuário criado com sucesso", newUser);
             };
 
             if (session) {
@@ -47,7 +47,7 @@ export const createUserController = (
             }
         } catch (err: unknown) {
             if (typeof err === "object" && err !== null && "code" in err && (err as { code: number }).code === 11000) {
-                return next(res.err_conflict("E-mail ou username já cadastrado"));
+                return next(res.err_conflict("E-mail ou username já cadastrado", {username: req.body.username, email: req.body.email}));
             }
             return next(err);
         } finally {
@@ -63,7 +63,7 @@ export const createUserController = (
             const deletedUser = await userService.removeUserById(userId);
 
             if (!deletedUser || deletedUser.deletedCount === 0) {
-                return next(res.err_notFound("Usuário não encontrado"));
+                return next(res.err_notFound("Usuário não encontrado", {_id: userId, possible_resolution: "Troque o token de acesso"}));
             }
 
             return res.send_ok("Usuário deletado com sucesso", deletedUser);
@@ -74,26 +74,26 @@ export const createUserController = (
 
     const updateUserPassword = async (
         req: AuthRequest & {
-            body: { email: string; password: string; lastPassword: string };
+            body: { email: string; newPassword: string; password: string };
         },
         res: Response,
         next: NextFunction
     ) => {
         try {
-            const { email, password, lastPassword } = req.body;
+            const { email, newPassword, password } = req.body;
 
-            if (!email || !password || !lastPassword) {
-                return next(res.err_badRequest("Campos obrigatórios não informados"));
+            if (!email || !newPassword || !password) {
+                return next(res.err_badRequest("Campos obrigatórios não informados", {email: email, password: password, newPassword: newPassword}));
             }
 
-            if (password === lastPassword) {
-                return next(res.err_badRequest("A nova senha não pode ser igual à senha antiga"));
+            if (newPassword === password) {
+                return next(res.err_badRequest("A nova senha não pode ser igual à senha antiga", {newPassword}));
             }
 
             await userService.updateUserPassword({
                 email,
+                newPassword,
                 password,
-                lastPassword,
                 _id: req.user!.id
             });
 

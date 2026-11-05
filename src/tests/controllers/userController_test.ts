@@ -86,7 +86,7 @@ Deno.test("UserController", async (t) => {
         assertEquals(nextError, null);
         assertEquals(res.statusCode, 201);
         assertEquals(res.message, "Usuário criado com sucesso");
-        assertEquals(res.data, "bruno");
+        assertEquals(res.data, {_id:fakeId, email:"bruno@email.com", username:"bruno" });
 
         // Valida se a skill padrão foi criada com o ID do novo usuário
         assertEquals(capturedSkillData, {
@@ -201,7 +201,7 @@ Deno.test("UserController", async (t) => {
         const controller = createUserController(mockUserService);
         const req = {
             user: { id: "user_id_123" },
-            body: { email: "bruno@email.com", password: "newPassword", lastPassword: "oldPassword" }
+            body: { email: "bruno@email.com", newPassword: "newPassword", password: "oldPassword" }
         } as any;
         const res = createMockRes() as any;
         let nextError: unknown = null;
@@ -233,7 +233,7 @@ Deno.test("UserController", async (t) => {
         const controller = createUserController({} as any);
         const req = {
             user: { id: "user_id_123" },
-            body: { email: "bruno@email.com", password: "samePassword", lastPassword: "samePassword" }
+            body: { email: "bruno@email.com", password: "samePassword", newPassword: "samePassword" }
         } as any;
         const res = createMockRes() as any;
         let nextError: any = null;
@@ -254,7 +254,7 @@ Deno.test("UserController", async (t) => {
         const controller = createUserController(mockUserService);
         const req = {
             user: { id: "user_id_123" },
-            body: { email: "bruno@email.com", password: "newPassword", lastPassword: "wrongOldPassword" }
+            body: { email: "bruno@email.com", newPassword: "newPassword", password: "wrongOldPassword" }
         } as any;
         const res = createMockRes() as any;
         let nextError: any = null;
@@ -275,7 +275,7 @@ Deno.test("UserController", async (t) => {
         const controller = createUserController(mockUserService);
         const req = {
             user: { id: "user_id_inexistente" },
-            body: { email: "naoexiste@email.com", password: "newPassword", lastPassword: "oldPassword" }
+            body: { email: "naoexiste@email.com", newPassword: "newPassword", password: "oldPassword" }
         } as any;
         const res = createMockRes() as any;
         let nextError: any = null;
