@@ -4,7 +4,7 @@ import type { AuthRequest } from "../middleware/authValidator.ts";
 import { string } from "@zarco/isness";
 
 
-
+// CONTROLLER --------------------------------------------- CREATE USER
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -26,10 +26,12 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
             return next(res.err_conflict("E-mail ou username já cadastrado"));
         }
         
-        return next(res.err_internal(err));
+        return next(err);
     }
     
 };
+
+// CONTROLLER --------------------------------------------- DELETE USER
 
 export const deleteHimselfUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     
@@ -47,12 +49,12 @@ export const deleteHimselfUser = async (req: AuthRequest, res: Response, next: N
         res.send_ok("Usuário deletado com sucesso", deletedUser);
 
     } catch (err) {
-        return next(res.err_internal(err))
+        return next(err)
     }
 
 };
 
-
+// CONTROLLER --------------------------------------------- UPDATE PASSWORD USER
 
 export const updateUserPassword = async (
     req: AuthRequest & { body: { email: string; password: string; lastPassword: string } },
@@ -99,11 +101,11 @@ export const updateUserPassword = async (
             return next(res.err_badRequest(err.message));
         }
 
-        return next(res.err_internal(err));
+        return next(err);
     }
 };
 
-
+// CONTROLLER --------------------------------------------- GET ALL USERNAMES
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -113,7 +115,7 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
         res.send_ok("Usuários Encontrados:", users);
     }
     catch (err) {
-        return next(res.err_internal("Erro ao buscar usuários"));
+        return next("Erro ao buscar usuários");
     }
     
 

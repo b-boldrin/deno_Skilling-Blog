@@ -20,17 +20,6 @@ export const removeSkill = async (skillData : SkillData) => {
   return await skillRepository.remove(skillData);
 };
 
-export const updateSkill = async (skillData : SkillData) => {
-
-  const skillToEdit = await skillRepository.getSkillById(skillData._id)
-
-  if (!skillToEdit) {
-    throw new Error("Skill não encontrada");
-  }
-  
-  if (skillToEdit.author._id.toString() !== skillData.authorId) {
-    throw new Error("Usuário não autorizado a editar essa skill");
-  }
-  
+export const updateSkill = async (skillData : SkillData) => {  
   return await skillRepository.update(skillData);
 } 

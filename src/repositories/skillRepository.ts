@@ -15,17 +15,11 @@ export const findAllByUserId = async (userId: string, page?: number) => {
     .limit(limit)
     .lean()
 
-    console.log(skills)
-
     return skills
 };
 
 
-export const update = async (skillData : getSkillData) => {
-    const updatedSkill = await Skill.updateOne({_id: skillData._id, author: skillData.authorId}, { $set: { content: skillData.content, tags: skillData.tags } });
 
-    return updatedSkill;
-}
 
 export const getSkillById = async (_id: string) => {;
 
@@ -46,8 +40,6 @@ export const findAllPublic = async (page?: number) => {
     .limit(limit)
     .lean()
 
-    console.log(skills)
-
     return skills
 };
 
@@ -61,6 +53,11 @@ export const create = async (skillData : sendSkillData) => {
 export const remove = async (skillData : getSkillData) => {
     const deletedSkill = await Skill.deleteOne({_id: skillData._id, author: skillData.authorId});
 
-
     return deletedSkill;
 };
+
+export const update = async (skillData : getSkillData) => {
+    const updatedSkill = await Skill.updateOne({_id: skillData._id, author: skillData.authorId}, { $set: {tittle: skillData.tittle, isPublic: skillData.isPublic || false,  content: skillData.content, tags: skillData.tags } });
+
+    return updatedSkill;
+}

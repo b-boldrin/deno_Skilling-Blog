@@ -15,12 +15,8 @@ export const findAll = async (page? : number) => {
     .limit(limit)
     .lean()
 
-    console.log(users)
-    
-
     return users
 
-// return await User.find();
 };
 
 export const create = async (userData : UserData) => {

@@ -1,5 +1,9 @@
 import * as skillService from "../services/skillService.ts";
 import type { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose"
+
+
+// CONTROLLER --------------------------------------------- GET ALL MY SKILL
 
 export const getAllMySkills = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -8,11 +12,11 @@ export const getAllMySkills = async (req: Request, res: Response, next: NextFunc
         
         res.send_ok("Skills Encontradas:", skills);
     } catch (err : any) {
-        return next(res.err_internal(err));
+        return next(err);
     }
 };
 
-
+// CONTROLLER --------------------------------------------- GET ALL PUBLIC SKILLS
 
 export const getAllPublicSkills = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -21,9 +25,11 @@ export const getAllPublicSkills = async (req: Request, res: Response, next: Next
         
         res.send_ok("Skills Encontradas:", skills);
     } catch (err : any) {
-        return next(res.err_internal(err));
+        return next(err);
     }
 };
+
+// CONTROLLER --------------------------------------------- CREATE SKILL
 
 export const createSkill = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -39,39 +45,56 @@ export const createSkill = async (req: Request, res: Response, next: NextFunctio
         res.send_created(newSkill);
 
     } catch (err : any) {
-        return next(res.err_internal(err));
+        return next(err);
     }
 };
+
+
+// CONTROLLER --------------------------------------------- DELETE SKILL
 
 export const deleteSkill = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        req.body.author = req.user.id!;
+        if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
+            return next(res.err_notFound("Skill não encontrada"));
+        }
+
+        req.body.authorId = req.user.id!;
 
         const deletedSkill = await skillService.removeSkill(req.body);
 
         if (deletedSkill.deletedCount === 0) {
-            next(res.err_notFound("Skill não encontrada"));
+            return next(res.err_notFound("Skill não encontrada"));
         }
 
-        res.send_ok(deletedSkill);
+        return res.send_ok(deletedSkill);
 
     } catch (err : any) {
-        return next((err));
+        return next(err);
     }
 };
 
+// CONTROLLER --------------------------------------------- UPDATE SKILL
 
 export const updateSkill = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
         req.body.authorId = req.user.id!
 
+        if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
+            return next(res.err_notFound("Skill não encontrada"));
+        }
+
         const updatedSkill = await skillService.updateSkill(req.body);
 
-        res.send_ok("Skill Editada com sucesso");
+        if (updatedSkill.modifiedCount === 0) {
+            return next(res.err_notFound("Skill não encontrada"));
+        }
+
+        return res.send_ok("Skill Editada com sucesso");
 
     } catch (err : any) {
-        return next(res.err_internal(err));
+
+        return next("Problema Interno");
     }
 };
