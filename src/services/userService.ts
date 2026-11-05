@@ -21,7 +21,6 @@ export const getUser = async (userData : UserData) => {
 }
 
 
-
 export const createUser = async (userData : UserData) => {
 
   
@@ -46,21 +45,15 @@ export const updateUserPassword = async (userData : { email: string; password: s
   }
   
 
-  console.log(lastPassword.password)
-  console.log(userData.lastPassword)
-
   const isSamePassword = await bcrypt.compare(userData.lastPassword!, lastPassword.password);
-  console.log("000")
+
   if (!isSamePassword) {
     throw new Error("A senha antiga não confere");
   }
-  console.log("aaa")
   
 
   const isSameAsLastPassword = await bcrypt.compare(userData.password, lastPassword.password);
   
-  console.log(isSameAsLastPassword)
-  console.log(userData.lastPassword, userData.password)
 
   if (isSameAsLastPassword) {
       throw new Error("A nova senha não pode ser igual a senha antiga");

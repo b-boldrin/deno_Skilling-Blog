@@ -2,7 +2,7 @@ import Skill from "../models/Skill.ts";
 import sendSkillData from "../types/SkillData.ts";
 import getSkillData from "../types/SkillData.ts";
 
-export const findAll = async (page? : number) => {
+export const findAllByUserId = async (userId: string, page?: number) => {
 
     if (!page) {
         page = 1
@@ -10,7 +10,7 @@ export const findAll = async (page? : number) => {
 
     const limit = 20
 
-    const skills = await Skill.find().sort({createdAt: -1})
+    const skills = await Skill.find({author: userId}, {__v: 0, createdAt: 0, content: 0}).sort({createdAt: -1})
     .skip((page - 1) * limit)
     .limit(limit)
     .lean()
@@ -20,6 +20,38 @@ export const findAll = async (page? : number) => {
     return skills
 };
 
+
+export const update = async (skillData : getSkillData) => {
+    const updatedSkill = await Skill.updateOne({_id: skillData._id, author: skillData.authorId}, { $set: { content: skillData.content, tags: skillData.tags } });
+
+    return updatedSkill;
+}
+
+export const getSkillById = async (_id: string) => {;
+
+    return await Skill.findOne({ _id }).populate('author', '_id');
+};
+
+
+export const findAllPublic = async (page?: number) => {
+
+    if (!page) {
+        page = 1
+    }
+
+    const limit = 20
+
+    const skills = await Skill.find({isPublic: true}, {__v: 0, createdAt: 0, content: 0}).populate('author', 'username').sort({createdAt: -1})
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean()
+
+    console.log(skills)
+
+    return skills
+};
+
+
 export const create = async (skillData : sendSkillData) => {
     const newSkill = new Skill(skillData);
 
@@ -27,7 +59,8 @@ export const create = async (skillData : sendSkillData) => {
 };
 
 export const remove = async (skillData : getSkillData) => {
-    const deletedSkill = await Skill.deleteOne({_id: skillData._id});
+    const deletedSkill = await Skill.deleteOne({_id: skillData._id, author: skillData.authorId});
+
 
     return deletedSkill;
 };

@@ -14,15 +14,26 @@ const skillSchema = new mongoose.Schema({
         ]
     },
 
-     
+    
+    tittle : {
+        type: String,
+        require: true
+    },
+
     content : {
         type: String,
         require: true
     },
 
     author : {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         require: true
+    },
+
+    isPublic: {
+        type: Boolean,
+        default: false
     }
 
     

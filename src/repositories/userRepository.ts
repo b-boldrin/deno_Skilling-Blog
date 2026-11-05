@@ -61,23 +61,3 @@ export const updatePassword = async (userData : UserData) => {
 
     return Boolean(updatedUser.modifiedCount);
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-//     const newSkill = await Skill.create({
-//   "content": "Desenvolvimento de APIs REST utilizando Node.js, Express e MongoDB com Mongoose. Conhecimento em criação de rotas, controllers, models, autenticação JWT e operações CRUD.",
-// "tags": ["JavaScript", "Node.js", "MongoDB", "Backend"],
-//   "author": "João Silva"
-// })

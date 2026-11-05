@@ -11,8 +11,9 @@ const router = express.Router();
 
 router.use(responser);
 
-router.get("/skills", skillController.getAllSkills);
+router.get("/skills", authMiddleware, skillController.getAllMySkills);
 router.post("/skills", validatorCreateSkill, authMiddleware, skillController.createSkill);
 router.delete("/skills", validatorDeleteSkill, authMiddleware, skillController.deleteSkill);
+router.patch("/skills", validatorDeleteSkill, authMiddleware, skillController.updateSkill);
 
 export default router;

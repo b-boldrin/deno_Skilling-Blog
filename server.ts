@@ -5,7 +5,7 @@ async function startServer() {
     try {
          await connectToDatabase()
 
-         app.listen(8000, () => {
+         app.listen(7999, () => {
             console.log("Servidor rodando!")
          })
 

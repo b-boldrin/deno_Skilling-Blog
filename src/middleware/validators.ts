@@ -33,6 +33,12 @@ rc.addRule('content', {
 });
 
 
+rc.addRule('tittle', {
+  validator: (value : string) => isFilled(value),
+  message: 'O título da skill é obrigatório'
+});
+
+
 rc.addRule('_id', {
   validator: (value : string) => isFilled(value),
   message: 'O identificador _id é obrigatório'
@@ -56,10 +62,11 @@ rc.addRule('email', {
 });
 
 export function validatorCreateSkill(req : Request, res : Response, next : NextFunction) {
-  const { content, tags } = req.body;
+  const {tittle, content, tags } = req.body;
 
     
     const errors = rc.check(
+    {tittle},
     { content },
     { tags }
     );

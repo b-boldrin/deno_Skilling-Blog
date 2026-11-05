@@ -3,6 +3,7 @@ export default interface sendSkillData {
      content: string,
 }
 
+
 export default interface getSkillData {
      _id : string,
      tags : string[], 

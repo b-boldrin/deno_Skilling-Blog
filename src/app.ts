@@ -1,5 +1,6 @@
 import express from "express";
 import skillRouter from "./routes/skills/skillRoutes.ts";
+import skillPublicRouter from "./routes/skills/public/skillRoutes.ts";
 import userRouter from "./routes/users/userRoutes.ts";
 import authRouter from "./routes/login/loginRoutes.ts";
 import responserModule from "responser"
@@ -29,6 +30,7 @@ main.use(responser);
 main.use(skillRouter);
 main.use(userRouter);
 main.use(authRouter);
+main.use(skillPublicRouter);
 
 main.use((_req : express.Request, res : express.Response , next : express.NextFunction) => {
   next(res.err_notFound("Route not found"));
