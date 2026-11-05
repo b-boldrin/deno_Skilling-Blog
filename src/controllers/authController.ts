@@ -1,20 +1,29 @@
-import type { Request, Response, NextFunction} from "express";
-import * as authService from "../services/authService.ts";
+import type { Request, Response, NextFunction } from "express";
+import authServiceDefault from "../services/authService.ts";
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-    const loginResult = await authService.checkLogin(req.body) as { isPasswordValid: boolean; token: string };
+export const createAuthController = (authService = authServiceDefault) => {
+    const login = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            if (!req.body?.email || !req.body?.password) {
+                return next(res.err_badRequest("Campos obrigatórios não informados"));
+            }
 
-    if (!loginResult.isPasswordValid) {
+            const loginResult = await authService.checkLogin(req.body);
 
-         return next(res.err_unauthorized("Credenciais inválidas"));
-    }
+            if (!loginResult.isPasswordValid) {
+                return next(res.err_unauthorized("Credenciais inválidas"));
+            }
 
-    const { token } = loginResult;
+            return res.send_ok("Login realizado com sucesso", {
+                token: loginResult.token
+            });
+        } catch (error) {
+            return next(error);
+        }
+    };
 
-    
-    return res.send_ok('Login realizado com sucesso', { token });
+    return { login };
+};
 
-    } catch (error) {
-       return next(error)
-} }
+const authController = createAuthController();
+export default authController;

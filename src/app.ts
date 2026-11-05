@@ -4,8 +4,8 @@ import skillPublicRouter from "./routes/skills/public/skillRoutes.ts";
 import userRouter from "./routes/users/userRoutes.ts";
 import authRouter from "./routes/login/loginRoutes.ts";
 import responserModule from "responser"
+import throwlhosModule from "throwlhos"
 
-import throwlhosModule from "throwlhos";
 
 const throwlhos = (
   throwlhosModule as unknown as {
@@ -17,26 +17,24 @@ const throwlhos = (
 
 const responser = responserModule.default
 
-const main = express();
+const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+app.use(throwlhos.middleware);
+app.use(responser);
 
-main.use(express.json());
-main.use(express.urlencoded({ extended: true }));
+app.use(skillRouter);
+app.use(userRouter);
+app.use(authRouter);
+app.use(skillPublicRouter);
 
-main.use(throwlhos.middleware);
-main.use(responser);
-
-main.use(skillRouter);
-main.use(userRouter);
-main.use(authRouter);
-main.use(skillPublicRouter);
-
-main.use((_req : express.Request, res : express.Response , next : express.NextFunction) => {
+app.use((_req : express.Request, res : express.Response , next : express.NextFunction) => {
   next(res.err_notFound("Route not found"));
 });
 
-main.use((error: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((error: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (res.headersSent) {
     return next(error);
   }
@@ -64,4 +62,4 @@ main.use((error: any, _req: express.Request, res: express.Response, next: expres
 
 
 
-export default main;
+export default app;

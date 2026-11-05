@@ -1,5 +1,5 @@
 import express from "express";
-import * as skillController from "../../controllers/skillController.ts";
+import skillController from "../../controllers/skillController.ts";
 import {validatorCreateSkill} from "../../middleware/validators.ts";
 import {validatorDeleteSkill} from "../../middleware/validators.ts";
 import authMiddleware from "../../middleware/authValidator.ts";

@@ -1,5 +1,5 @@
 import express from "express";
-import * as authController from "../../controllers/authController.ts";
+import authController from "../../controllers/authController.ts";
 import responserModule from "responser";
 
 const responser = responserModule.default;

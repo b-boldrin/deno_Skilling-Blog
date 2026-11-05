@@ -1,6 +1,7 @@
 import Skill from "../models/Skill.ts";
 import sendSkillData from "../types/SkillData.ts";
 import getSkillData from "../types/SkillData.ts";
+import mongoose from "mongoose"
 
 export const findAllByUserId = async (userId: string, page?: number) => {
 
@@ -44,10 +45,10 @@ export const findAllPublic = async (page?: number) => {
 };
 
 
-export const create = async (skillData : sendSkillData) => {
+export const create = async (skillData : sendSkillData, session? : mongoose.mongo.ClientSession) => {
     const newSkill = new Skill(skillData);
 
-    return await newSkill.save();
+    session ? await newSkill.save({session}) : await newSkill.save();
 };
 
 export const remove = async (skillData : getSkillData) => {
@@ -57,7 +58,7 @@ export const remove = async (skillData : getSkillData) => {
 };
 
 export const update = async (skillData : getSkillData) => {
-    const updatedSkill = await Skill.updateOne({_id: skillData._id, author: skillData.authorId}, { $set: {tittle: skillData.tittle, isPublic: skillData.isPublic || false,  content: skillData.content, tags: skillData.tags } });
+    const updatedSkill = await Skill.updateOne({_id: skillData._id, author: skillData.authorId}, { $set: {title: skillData.title, isPublic: skillData.isPublic || false,  content: skillData.content, tags: skillData.tags } });
 
     return updatedSkill;
 }

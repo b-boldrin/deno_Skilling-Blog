@@ -1,25 +1,57 @@
 import SkillData from "../types/SkillData.ts"
-
 import * as skillRepository from "../repositories/skillRepository.ts";
+import mongoose from "mongoose"
 
-export const getAllMySkills = async (userId: string, page?: number) => {
-    
-  return await skillRepository.findAllByUserId(userId, page);
-};
+type SkillRepository = typeof skillRepository;
 
-export const getAllPublicSkills = async (page?: number) => {
-    
-  return await skillRepository.findAllPublic(page);
-};
+export class ForbiddenError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "ForbiddenError";
+    }
+}
 
-export const createSkill = async (skillData : SkillData) => {
-  return await skillRepository.create(skillData);
-};
+export const createSkillService = ( 
+  repository: Pick<
+        SkillRepository,
+        | "findAllByUserId"
+        | "findAllPublic"
+        | "create"
+        | "remove"
+        | "update"
+    > = skillRepository) => {
 
-export const removeSkill = async (skillData : SkillData) => {
-  return await skillRepository.remove(skillData);
-};
+    const getAllMySkills = async (userId: string, page?: number) => {
+        
+      return await repository.findAllByUserId(userId, page);
+    };
 
-export const updateSkill = async (skillData : SkillData) => {  
-  return await skillRepository.update(skillData);
-} 
+    const getAllPublicSkills = async (page?: number) => {
+        
+      return await repository.findAllPublic(page);
+    };
+
+    const createSkill = async (skillData : SkillData, session? : mongoose.mongo.ClientSession) => {
+      return await repository.create(skillData, session);
+    };
+
+    const removeSkill = async (skillData : SkillData) => {
+      return await repository.remove(skillData);
+    };
+
+    const updateSkill = async (skillData : SkillData) => {  
+      return await repository.update(skillData);
+    } 
+
+    return {
+        getAllMySkills,
+        getAllPublicSkills,
+        createSkill,
+        removeSkill,
+        updateSkill
+    }
+  }
+
+const skillService = createSkillService()
+
+export default skillService

@@ -15,7 +15,7 @@ const skillSchema = new mongoose.Schema({
     },
 
     
-    tittle : {
+    title : {
         type: String,
         require: true
     },

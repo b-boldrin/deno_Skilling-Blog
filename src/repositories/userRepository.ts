@@ -1,4 +1,7 @@
 import User from "../models/User.ts";
+import mongoose from "mongoose"
+import type UpdatePasswordData from "../types/UpdatePasswordData.ts";
+import type {UserPasswordData} from "../types/UserPasswordData.ts"
 import type UserData from "../types/UserData.ts";
 
 
@@ -19,19 +22,25 @@ export const findAll = async (page? : number) => {
 
 };
 
-export const create = async (userData : UserData) => {
 
+export const create = async (
+    userData: UserData, session? : mongoose.mongo.ClientSession
+): Promise<{ _id: mongoose.Types.ObjectId; username: string; email: string } | false> => {
     const existingUser = await User.findOne({ email: userData.email });
 
     if (existingUser) {
-   return false
-}
+        return false;
+    }
 
     const newUser = new User(userData);
-    await newUser.save();
-    return newUser;
-};
+    session ? await newUser.save({session}) : await newUser.save();
 
+    return {
+        _id: newUser._id,
+        username: newUser.username,
+        email: newUser.email
+    };
+};
 export const removeById = async (id : string) => {
     const deletedUser = await User.deleteOne({_id: id});
 
@@ -44,14 +53,14 @@ export const getByEmail = async (email: string) => {;
     return await User.findOne({ email }).select('+password');
 };
 
-export const getLastPasswordByIdAndEmail = async (id: string, email: string) => {
+export const getLastPasswordByIdAndEmail = async (id: string, email: string) : Promise<UserPasswordData | null>=> {
     
     return await User.findOne({ _id: id, email: email }).select('+password'); 
 
 }
 
 
-export const updatePassword = async (userData : UserData) => {
+export const updatePassword = async (userData : UpdatePasswordData) => {
 
     const updatedUser = await User.updateOne({_id: userData._id, email: userData.email }, { $set: { password: userData.password } });
 
