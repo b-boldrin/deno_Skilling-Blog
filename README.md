@@ -86,6 +86,15 @@ Para mais informações dos endpoints [API Wiki](./docs/Deno%20API.md)
 
 Se preferir, temos o nosso arquivo [Postman Collections](./API/postman-docs.json)
 
+```bash
+# Configure no Postman Enviroments
+
+token       : Vazio             - vai ser preenchido sozinho após logar
+baseUrl     : localhost:8000    - ou o IP da sua VPS
+password    : suaSenhaPrincipal
+newPassword : suaNovaSenha      - adicione caso queira trocar
+```
+
 > OBS: É recomendado não levar o postman como fonte da verdade, a wiki mais atual é a [API Wiki](./API%20Wiki.md), o postman é apenas um facilitador
 
 ---
