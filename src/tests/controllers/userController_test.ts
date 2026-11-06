@@ -8,6 +8,7 @@ const createMockRes = () => {
         statusCode: 0,
         message: "",
         data: null,
+        locals: {},
         send_ok(msg: string, data?: unknown) {
             this.statusCode = 200;
             this.message = msg;
@@ -86,9 +87,8 @@ Deno.test("UserController", async (t) => {
         assertEquals(nextError, null);
         assertEquals(res.statusCode, 201);
         assertEquals(res.message, "Usuário criado com sucesso");
-        assertEquals(res.data, {_id:fakeId, email:"bruno@email.com", username:"bruno" });
+        assertEquals(res.data, { _id: fakeId, email: "bruno@email.com", username: "bruno" });
 
-        // Valida se a skill padrão foi criada com o ID do novo usuário
         assertEquals(capturedSkillData, {
             author: String(fakeId),
             title: "My First Skill",
@@ -120,7 +120,7 @@ Deno.test("UserController", async (t) => {
         await controller.createUser(req, res, next);
 
         assertEquals(nextError, { status: 409, message: "E-mail ou username já cadastrado" });
-        assertEquals(skillCalled, false); // Garante que não tentou criar skill se o usuário falhou
+        assertEquals(skillCalled, false);
     });
 
     await t.step("POST /users - Deve rejeitar usuário duplicado (erro 11000 do MongoDB)", async () => {
@@ -172,15 +172,24 @@ Deno.test("UserController", async (t) => {
         await controller.createUser(req, res, next);
 
         assertEquals(nextError, skillError);
-        assertEquals(res.statusCode, 0); // Garante que não enviou resposta de sucesso
+        assertEquals(res.statusCode, 0);
     });
 
-    await t.step("DELETE /users - Deve excluir o próprio usuário", async () => {
+    await t.step("DELETE /users - Deve excluir o próprio usuário e suas skills", async () => {
+        let deletedSkillsForAuthor: string | null = null;
+
         const mockUserService = {
             removeUserById: async () => ({ deletedCount: 1 }),
         } as any;
 
-        const controller = createUserController(mockUserService);
+        const mockSkillService = {
+            deleteAllSkillsForAuthorId: async (authorId: string) => {
+                deletedSkillsForAuthor = authorId;
+                return { deletedCount: 2 };
+            }
+        } as any;
+
+        const controller = createUserController(mockUserService, mockSkillService);
         const req = { user: { id: "user_id_123" } } as any;
         const res = createMockRes() as any;
         let nextError: unknown = null;
@@ -191,6 +200,32 @@ Deno.test("UserController", async (t) => {
         assertEquals(nextError, null);
         assertEquals(res.statusCode, 200);
         assertEquals(res.message, "Usuário deletado com sucesso");
+        assertEquals(deletedSkillsForAuthor, "user_id_123");
+    });
+
+    await t.step("DELETE /users - Deve retornar 404 se o usuário a ser deletado não existir", async () => {
+        let skillsDeletedCalled = false;
+
+        const mockUserService = {
+            removeUserById: async () => ({ deletedCount: 0 }),
+        } as any;
+
+        const mockSkillService = {
+            deleteAllSkillsForAuthorId: async () => {
+                skillsDeletedCalled = true;
+            }
+        } as any;
+
+        const controller = createUserController(mockUserService, mockSkillService);
+        const req = { user: { id: "user_id_inexistente" } } as any;
+        const res = createMockRes() as any;
+        let nextError: any = null;
+        const next = (err?: unknown) => { nextError = err; };
+
+        await controller.deleteHimselfUser(req, res, next);
+
+        assertEquals(nextError, { status: 404, message: "Usuário não encontrado" });
+        assertEquals(skillsDeletedCalled, false);
     });
 
     await t.step("PATCH /users - Deve atualizar senha com sucesso", async () => {

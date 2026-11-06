@@ -1,106 +1,137 @@
-import { assertEquals, assertInstanceOf } from "jsr:@std/assert";
-import type { Request, Response, NextFunction } from "npm:express";
-import mongoose from "npm:mongoose";
-import bcrypt from "npm:bcrypt";
-
+import { assertEquals } from "jsr:@std/assert";
 import { createAuthController } from "../../controllers/authController.ts";
-import { createAuthService } from "../../services/authService.ts";
 
-const hashedPassword = await bcrypt.hash("SenhaCorreta123", 12);
-
-const authRepositorySuccessMock = {
-    getByEmail: async (email: string) => {
-        if (email === "user@example.com") {
-            return {
-                _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439011"),
-                username: "Test User",
-                email: "user@example.com",
-                password: hashedPassword
-            } as Awaited<ReturnType<NonNullable<Parameters<typeof createAuthService>[0]>["getByEmail"]>>;
+const createMockRes = () => {
+    const res: Record<string, unknown> = {
+        statusCode: 0,
+        message: "",
+        data: null,
+        send_ok(msg: string, data?: unknown) {
+            this.statusCode = 200;
+            this.message = msg;
+            this.data = data;
+            return this;
+        },
+        err_badRequest(msg: string) {
+            return { status: 400, message: msg };
+        },
+        err_unauthorized(msg: string) {
+            return { status: 401, message: msg };
         }
-        return null;
-    }
+    };
+    return res;
 };
 
 Deno.test("AuthController", async (t) => {
-    Deno.env.set("JWT_SECRET", "segredo_de_teste_unitario");
-
-    const service = createAuthService(authRepositorySuccessMock);
-    const controller = createAuthController(service);
-
     await t.step("POST /login - Deve realizar login com sucesso e retornar token", async () => {
-        let responseData: { token?: string } = {};
+        const mockAuthService = {
+            checkLogin: async () => ({
+                isPasswordValid: true as const,
+                token: "jwt_token_valido_123"
+            })
+        } as any;
 
+        const controller = createAuthController(mockAuthService);
         const req = {
-            body: {
-                email: "user@example.com",
-                password: "SenhaCorreta123"
-            }
-        } as Request;
-
-        const res = {
-            send_ok: (_message: string, data: { token: string }) => {
-                responseData = data;
-                return res;
-            },
-            err_unauthorized: (message: string) => new Error(message)
-        } as unknown as Response;
-
-        const next: NextFunction = (error?: unknown) => {
-            if (error) throw error;
+            body: { email: "bruno@email.com", password: "123" }
+        } as any;
+        const res = createMockRes() as any;
+        let nextError: unknown = null;
+        const next = (err?: unknown) => {
+            nextError = err;
         };
 
         await controller.login(req, res, next);
 
-        assertEquals(typeof responseData.token, "string");
-        assertEquals((responseData.token?.length ?? 0) > 10, true);
+        assertEquals(nextError, null);
+        assertEquals(res.statusCode, 200);
+        assertEquals(res.message, "Login realizado com sucesso");
+        assertEquals(res.data, { token: "jwt_token_valido_123" });
     });
 
-    await t.step("POST /login - Deve rejeitar senha incorreta", async () => {
-        let receivedError: unknown;
-
+    await t.step("POST /login - Deve rejeitar requisição sem email", async () => {
+        const controller = createAuthController({} as any);
         const req = {
-            body: {
-                email: "user@example.com",
-                password: "SenhaErrada"
-            }
-        } as Request;
-
-        const res = {
-            err_unauthorized: (message: string) => new Error(message)
-        } as unknown as Response;
-
-        const next: NextFunction = (error?: unknown) => {
-            receivedError = error;
+            body: { password: "123" }
+        } as any;
+        const res = createMockRes() as any;
+        let nextError: unknown = null;
+        const next = (err?: unknown) => {
+            nextError = err;
         };
 
         await controller.login(req, res, next);
 
-        assertInstanceOf(receivedError, Error);
-        assertEquals(receivedError.message, "Credenciais inválidas");
+        assertEquals(nextError, {
+            status: 400,
+            message: "Campos obrigatórios não informados"
+        });
     });
 
-    await t.step("POST /login - Deve rejeitar usuário inexistente", async () => {
-        let receivedError: unknown;
-
+    await t.step("POST /login - Deve rejeitar requisição sem senha", async () => {
+        const controller = createAuthController({} as any);
         const req = {
-            body: {
-                email: "naoexiste@example.com",
-                password: "SenhaCorreta123"
-            }
-        } as Request;
-
-        const res = {
-            err_unauthorized: (message: string) => new Error(message)
-        } as unknown as Response;
-
-        const next: NextFunction = (error?: unknown) => {
-            receivedError = error;
+            body: { email: "bruno@email.com" }
+        } as any;
+        const res = createMockRes() as any;
+        let nextError: unknown = null;
+        const next = (err?: unknown) => {
+            nextError = err;
         };
 
         await controller.login(req, res, next);
 
-        assertInstanceOf(receivedError, Error);
-        assertEquals(receivedError.message, "Credenciais inválidas");
+        assertEquals(nextError, {
+            status: 400,
+            message: "Campos obrigatórios não informados"
+        });
+    });
+
+    await t.step("POST /login - Deve rejeitar credenciais inválidas (401)", async () => {
+        const mockAuthService = {
+            checkLogin: async () => ({
+                isPasswordValid: false as const
+            })
+        } as any;
+
+        const controller = createAuthController(mockAuthService);
+        const req = {
+            body: { email: "bruno@email.com", password: "senha_errada" }
+        } as any;
+        const res = createMockRes() as any;
+        let nextError: unknown = null;
+        const next = (err?: unknown) => {
+            nextError = err;
+        };
+
+        await controller.login(req, res, next);
+
+        assertEquals(nextError, {
+            status: 401,
+            message: "Credenciais inválidas"
+        });
+    });
+
+    await t.step("POST /login - Deve repassar erro inesperado para o next", async () => {
+        const unexpectedError = new Error("Falha no banco de dados");
+        const mockAuthService = {
+            checkLogin: async () => {
+                throw unexpectedError;
+            }
+        } as any;
+
+        const controller = createAuthController(mockAuthService);
+        const req = {
+            body: { email: "bruno@email.com", password: "123" }
+        } as any;
+        const res = createMockRes() as any;
+        let nextError: unknown = null;
+        const next = (err?: unknown) => {
+            nextError = err;
+        };
+
+        await controller.login(req, res, next);
+
+        assertEquals(nextError, unexpectedError);
     });
 });

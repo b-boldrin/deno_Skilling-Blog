@@ -47,39 +47,43 @@ export const createSkillController =
     };
 
     const findSkillById = async (
-            req: Request,
-            res: Response,
-            next: NextFunction
-        ) => {
-            try {
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const rawSkillId = req.query.skillId;
 
-            const skillIdBefore = String(req.query.skillId)
-          
-            if (skillIdBefore === undefined) {
-                return next('route')
+            if (rawSkillId === undefined) {
+                return next("route");
+            }
+
+            const skillIdBefore = String(rawSkillId);
+
+            if (!mongoose.Types.ObjectId.isValid(skillIdBefore)) {
+                return next(
+                    res.err_notFound("Id não é valido", {
+                        expected_format: "?skillId=\$_id",
+                        received: "?skillId=" + req.query.skillId
+                    })
+                );
             }
 
             const skillId = new mongoose.Types.ObjectId(skillIdBefore);
-        
-
-            if (!mongoose.Types.ObjectId.isValid(skillId)) {
-                return next(res.err_notFound("Id não é valido", {expected_format: "?skillId=$_id", received: "?skillId=" + req.query.skillId}));
-            }
-
-            const findSkill = await skillService.findSkillById(skillId)
+            const findSkill = await skillService.findSkillById(skillId);
 
             if (!findSkill) {
-                return next(res.err_notFound("Id não é valido", {received: skillId}));
+                return next(
+                    res.err_notFound("Id não é valido", { received: skillId })
+                );
             }
 
-            if (findSkill.isPublic === false){
-                res.locals.targetSkill = findSkill
-                return next('route')
+            if (findSkill.isPublic === false) {
+                res.locals.targetSkill = findSkill;
+                return next("route");
             }
 
             return res.send_ok("Skill Encontrada:", findSkill);
-            
-
         } catch (err) {
             return next(err);
         }
