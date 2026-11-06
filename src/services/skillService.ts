@@ -12,7 +12,7 @@ export class ForbiddenError extends Error {
 }
 
 export const createSkillService = ( 
-  repository: Pick<
+  repository: Partial<Pick<
         SkillRepository,
         | "findAllByUserId"
         | "findAllPublic"
@@ -21,37 +21,37 @@ export const createSkillService = (
         | "remove"
         | "update"
         | "removeMany"
-    > = skillRepository) => {
+    >> = skillRepository) => {
 
     const getAllMySkills = async (userId: string, page?: number) => {
         
-      return await repository.findAllByUserId(userId, page);
+      return await repository.findAllByUserId!(userId, page);
     };
 
     const getAllPublicSkills = async (page?: number) => {
         
-      return await repository.findAllPublic(page);
+      return await repository.findAllPublic!(page);
     };
 
     const createSkill = async (skillData : SkillData, session? : mongoose.mongo.ClientSession) => {
-      return await repository.create(skillData, session);
+      return await repository.create!(skillData, session);
     };
 
     const removeSkill = async (skillData : SkillData) => {
-      return await repository.remove(skillData);
+      return await repository.remove!(skillData);
     };
 
     const deleteAllSkillsForAuthorId = async (authorId : string, session? : mongoose.mongo.ClientSession) => {
-      return await repository.removeMany(authorId, session);
+      return await repository.removeMany!(authorId, session);
     };
 
     const updateSkill = async (skillData : SkillData) => {  
-      return await repository.update(skillData);
+      return await repository.update!(skillData);
     } 
 
     const findSkillById = async (skillId : mongoose.Types.ObjectId) => {  
 
-      return await repository.findSkillById(skillId);
+      return await repository.findSkillById!(skillId);
     } 
 
     return {

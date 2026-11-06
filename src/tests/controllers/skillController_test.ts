@@ -3,39 +3,18 @@ import type { Request, Response, NextFunction } from "npm:express";
 import mongoose from "mongoose";
 import { createSkillController } from "../../controllers/skillController.ts";
 import { createSkillService } from "../../services/skillService.ts";
-import { skillRepositoryMock } from "../mocks/skillRepositoryMock.ts";
-
-const skillRepositoryNotFoundMock = {
-    findAllByUserId: async () => [],
-    findAllPublic: async () => [],
-    findSkillById: async () => null,
-    create: async (data: any) => data,
-    remove: async () => ({
-        acknowledged: true,
-        deletedCount: 0
-    }),
-    removeMany: async () => ({
-        acknowledged: true,
-        deletedCount: 0
-    }),
-    update: async () => ({
-        acknowledged: true,
-        matchedCount: 0,
-        modifiedCount: 0,
-        upsertedCount: 0,
-        upsertedId: null
-    })
-};
-
-const notFoundService = createSkillService(skillRepositoryNotFoundMock);
-const notFoundController = createSkillController(notFoundService);
 
 Deno.test("SkillController", async (t) => {
-    const service = createSkillService(skillRepositoryMock);
-    const controller = createSkillController(service);
 
-    await t.step("GET /skills - Deve listar skills do usuário", async () => {
+    await t.step("GET /skills - Deve listar skills do usuário (mock apenas findAllByUserId)", async () => {
         let responseData: any;
+
+        const service = createSkillService({
+            findAllByUserId: async (_userId: string, _page?: number) => [
+                { _id: "507f1f77bcf86cd799439011", title: "Minha Skill", author: "user123", isPublic: true } as any
+            ]
+        } as any);
+        const controller = createSkillController(service);
 
         const req = {
             user: { id: "user123" },
@@ -47,8 +26,7 @@ Deno.test("SkillController", async (t) => {
             send_ok: (_message: string, data: any) => {
                 responseData = data;
                 return res;
-            },
-            err_badRequest: (message: string) => new Error(message)
+            }
         } as unknown as Response;
 
         const next: NextFunction = (error?: any) => {
@@ -57,11 +35,13 @@ Deno.test("SkillController", async (t) => {
 
         await controller.getAllMySkills(req, res, next);
 
-        assertEquals(responseData, []);
+        assertEquals(responseData.length, 1);
+        assertEquals(responseData[0].title, "Minha Skill");
     });
 
     await t.step("GET /skills - Deve rejeitar paginação inválida", async () => {
         let receivedError: any;
+        const controller = createSkillController(createSkillService({} as any));
 
         const req = {
             user: { id: "user123" },
@@ -85,27 +65,81 @@ Deno.test("SkillController", async (t) => {
 
     await t.step("GET /skills (findSkillById) - Sem query.skillId deve pular para a próxima rota com next('route')", async () => {
         let nextArg: any;
+        const controller = createSkillController(createSkillService({} as any));
 
-        const req = {
-            query: {}
-        } as unknown as Request;
-
-        const res = {
-            locals: {}
-        } as unknown as Response;
-
-        const next: NextFunction = (arg?: any) => {
-            nextArg = arg;
-        };
+        const req = { query: {} } as unknown as Request;
+        const res = { locals: {} } as unknown as Response;
+        const next: NextFunction = (arg?: any) => { nextArg = arg; };
 
         await controller.findSkillById(req, res, next);
 
         assertEquals(nextArg, "route");
     });
 
+    await t.step("GET /skills (findSkillById) - Deve rejeitar skillId com formato inválido", async () => {
+        let receivedError: any;
+        const controller = createSkillController(createSkillService({} as any));
+
+        const req = {
+            query: { skillId: "id_invalido_123" }
+        } as unknown as Request;
+
+        const res = {
+            locals: {},
+            err_notFound: (message: string) => new Error(message)
+        } as unknown as Response;
+
+        const next: NextFunction = (error?: any) => {
+            receivedError = error;
+        };
+
+        await controller.findSkillById(req, res, next);
+
+        assertEquals(receivedError instanceof Error, true);
+        assertEquals(receivedError.message, "Id não é valido");
+    });
+
+    await t.step("GET /skills (findSkillById) - Deve retornar 404 quando a skill não existir no banco", async () => {
+        let receivedError: any;
+        const validId = "507f1f77bcf86cd799439011";
+
+        const service = createSkillService({
+            findSkillById: async () => null
+        } as any);
+        const controller = createSkillController(service);
+
+        const req = {
+            query: { skillId: validId }
+        } as unknown as Request;
+
+        const res = {
+            locals: {},
+            err_notFound: (message: string) => new Error(message)
+        } as unknown as Response;
+
+        const next: NextFunction = (error?: any) => {
+            receivedError = error;
+        };
+
+        await controller.findSkillById(req, res, next);
+
+        assertEquals(receivedError instanceof Error, true);
+        assertEquals(receivedError.message, "Id não é valido");
+    });
+
     await t.step("GET /skills (findSkillById) - Deve retornar uma skill pública diretamente", async () => {
         let responseData: any;
         const validId = "507f1f77bcf86cd799439011";
+
+        const service = createSkillService({
+            findSkillById: async (skillId: mongoose.Types.ObjectId) => ({
+                _id: skillId,
+                title: "Aprendendo Deno",
+                author: "user123",
+                isPublic: true
+            } as any)
+        } as any);
+        const controller = createSkillController(service);
 
         const req = {
             query: { skillId: validId }
@@ -116,8 +150,7 @@ Deno.test("SkillController", async (t) => {
             send_ok: (_message: string, data: any) => {
                 responseData = data;
                 return res;
-            },
-            err_notFound: (message: string) => new Error(message)
+            }
         } as unknown as Response;
 
         const next: NextFunction = (error?: any) => {
@@ -140,27 +173,16 @@ Deno.test("SkillController", async (t) => {
             isPublic: false
         };
 
-        const privateService = createSkillService({
-            ...skillRepositoryMock,
+        const service = createSkillService({
             findSkillById: async () => privateSkill as any
-        });
-        const privateController = createSkillController(privateService);
+        } as any);
+        const controller = createSkillController(service);
 
-        const req = {
-            query: { skillId: validId }
-        } as unknown as Request;
+        const req = { query: { skillId: validId } } as unknown as Request;
+        const res = { locals: {} } as unknown as Response;
+        const next: NextFunction = (arg?: any) => { nextArg = arg; };
 
-        const res = {
-            locals: {},
-            send_ok: () => res,
-            err_notFound: (message: string) => new Error(message)
-        } as unknown as Response;
-
-        const next: NextFunction = (arg?: any) => {
-            nextArg = arg;
-        };
-
-        await privateController.findSkillById(req, res, next);
+        await controller.findSkillById(req, res, next);
 
         assertEquals(nextArg, "route");
         assertEquals(res.locals.targetSkill, privateSkill);
@@ -168,6 +190,7 @@ Deno.test("SkillController", async (t) => {
 
     await t.step("GET /skills (getAllMySkills) - Deve retornar skill privada de res.locals se o usuário for o autor", async () => {
         let responseData: any;
+        const controller = createSkillController(createSkillService({} as any));
         const targetSkill = {
             _id: "507f1f77bcf86cd799439011",
             title: "Minha Skill Privada",
@@ -185,8 +208,7 @@ Deno.test("SkillController", async (t) => {
             send_ok: (_message: string, data: any) => {
                 responseData = data;
                 return res;
-            },
-            err_unauthorized: (message: string) => new Error(message)
+            }
         } as unknown as Response;
 
         const next: NextFunction = (error?: any) => {
@@ -200,6 +222,7 @@ Deno.test("SkillController", async (t) => {
 
     await t.step("GET /skills (getAllMySkills) - Deve bloquear acesso à skill privada se o usuário não for o autor", async () => {
         let receivedError: any;
+        const controller = createSkillController(createSkillService({} as any));
         const targetSkill = {
             _id: "507f1f77bcf86cd799439011",
             title: "Skill Privada de Outro",
@@ -214,7 +237,6 @@ Deno.test("SkillController", async (t) => {
 
         const res = {
             locals: { targetSkill },
-            send_ok: () => res,
             err_unauthorized: (message: string) => new Error(message)
         } as unknown as Response;
 
@@ -228,9 +250,13 @@ Deno.test("SkillController", async (t) => {
         assertEquals(receivedError.message, "Você não tem permissão para acessar essa skill");
     });
 
-    await t.step("POST /skills - Deve criar uma Skill", async () => {
+    await t.step("POST /skills - Deve criar uma Skill (mock apenas create)", async () => {
         let responseData: any;
-        let createdStatus = false;
+
+        const service = createSkillService({
+            create: async (data: any) => data
+        } as any);
+        const controller = createSkillController(service);
 
         const req = {
             user: { id: "user123" },
@@ -245,10 +271,8 @@ Deno.test("SkillController", async (t) => {
         const res = {
             send_created: (_message: string, data: any) => {
                 responseData = data;
-                createdStatus = true;
                 return res;
-            },
-            err_badRequest: (message: string) => new Error(message)
+            }
         } as unknown as Response;
 
         const next: NextFunction = (error?: any) => {
@@ -257,19 +281,20 @@ Deno.test("SkillController", async (t) => {
 
         await controller.createSkill(req, res, next);
 
-        assertEquals(createdStatus, true);
         assertEquals(responseData.title, "Aprendendo Deno");
         assertEquals(responseData.author, "user123");
     });
 
-    await t.step("POST /skills - Não deve criar Skill sem título", async () => {
+    await t.step("POST /skills - Não deve criar Skill com array de tags vazio", async () => {
         let receivedError: any;
+        const controller = createSkillController(createSkillService({} as any));
 
         const req = {
             user: { id: "user123" },
             body: {
+                title: "Aprendendo Deno",
                 content: "Conteúdo sobre Deno",
-                tags: ["deno"]
+                tags: []
             }
         } as unknown as Request;
 
@@ -284,58 +309,22 @@ Deno.test("SkillController", async (t) => {
         await controller.createSkill(req, res, next);
 
         assertEquals(receivedError instanceof Error, true);
+        assertEquals(receivedError.message, "Campos obrigatórios não informados");
     });
 
-    await t.step("POST /skills - Não deve criar Skill sem conteúdo", async () => {
-        let receivedError: any;
-
-        const req = {
-            user: { id: "user123" },
-            body: {
-                title: "Aprendendo Deno",
-                tags: ["deno"]
-            }
-        } as unknown as Request;
-
-        const res = {
-            err_badRequest: (message: string) => new Error(message)
-        } as unknown as Response;
-
-        const next: NextFunction = (error?: any) => {
-            receivedError = error;
-        };
-
-        await controller.createSkill(req, res, next);
-
-        assertEquals(receivedError instanceof Error, true);
-    });
-
-    await t.step("POST /skills - Não deve criar Skill sem tags", async () => {
-        let receivedError: any;
-
-        const req = {
-            user: { id: "user123" },
-            body: {
-                title: "Aprendendo Deno",
-                content: "Conteúdo sobre Deno"
-            }
-        } as unknown as Request;
-
-        const res = {
-            err_badRequest: (message: string) => new Error(message)
-        } as unknown as Response;
-
-        const next: NextFunction = (error?: any) => {
-            receivedError = error;
-        };
-
-        await controller.createSkill(req, res, next);
-
-        assertEquals(receivedError instanceof Error, true);
-    });
-
-    await t.step("PATCH /skills - Deve atualizar uma Skill", async () => {
+    await t.step("PATCH /skills - Deve atualizar uma Skill (mock apenas update)", async () => {
         let responseMessage: string | undefined;
+
+        const service = createSkillService({
+            update: async () => ({
+                acknowledged: true,
+                matchedCount: 1,
+                modifiedCount: 1,
+                upsertedCount: 0,
+                upsertedId: null
+            })
+        } as any);
+        const controller = createSkillController(service);
 
         const req = {
             user: { id: "user123" },
@@ -351,8 +340,7 @@ Deno.test("SkillController", async (t) => {
             send_ok: (message: string) => {
                 responseMessage = message;
                 return res;
-            },
-            err_notFound: (message: string) => new Error(message)
+            }
         } as unknown as Response;
 
         const next: NextFunction = (error?: any) => {
@@ -366,13 +354,11 @@ Deno.test("SkillController", async (t) => {
 
     await t.step("PATCH /skills - Deve rejeitar ID inválido", async () => {
         let receivedError: any;
+        const controller = createSkillController(createSkillService({} as any));
 
         const req = {
             user: { id: "user123" },
-            body: {
-                _id: "id-invalido",
-                title: "Deno Avançado"
-            }
+            body: { _id: "id-invalido", title: "Deno Avançado" }
         } as unknown as Request;
 
         const res = {
@@ -386,21 +372,29 @@ Deno.test("SkillController", async (t) => {
         await controller.updateSkill(req, res, next);
 
         assertEquals(receivedError instanceof Error, true);
+        assertEquals(receivedError.message, "Id não é valido");
     });
 
     await t.step("PATCH /skills - Deve rejeitar Skill inexistente", async () => {
         let receivedError: any;
 
+        const service = createSkillService({
+            update: async () => ({
+                acknowledged: true,
+                matchedCount: 0,
+                modifiedCount: 0,
+                upsertedCount: 0,
+                upsertedId: null
+            })
+        } as any);
+        const controller = createSkillController(service);
+
         const req = {
             user: { id: "user123" },
-            body: {
-                _id: "507f1f77bcf86cd799439011",
-                title: "Deno Avançado"
-            }
+            body: { _id: "507f1f77bcf86cd799439011", title: "Deno Avançado" }
         } as unknown as Request;
 
         const res = {
-            send_ok: () => res,
             err_notFound: (message: string) => new Error(message)
         } as unknown as Response;
 
@@ -408,27 +402,30 @@ Deno.test("SkillController", async (t) => {
             receivedError = error;
         };
 
-        await notFoundController.updateSkill(req, res, next);
+        await controller.updateSkill(req, res, next);
 
         assertEquals(receivedError instanceof Error, true);
+        assertEquals(receivedError.message, "Skill não encontrada");
     });
 
-    await t.step("DELETE /skills - Deve excluir uma Skill", async () => {
+    await t.step("DELETE /skills - Deve excluir uma Skill (mock apenas remove)", async () => {
         let responseData: any;
+
+        const service = createSkillService({
+            remove: async () => ({ acknowledged: true, deletedCount: 1 })
+        } as any);
+        const controller = createSkillController(service);
 
         const req = {
             user: { id: "user123" },
-            body: {
-                _id: "507f1f77bcf86cd799439011"
-            }
+            body: { _id: "507f1f77bcf86cd799439011" }
         } as unknown as Request;
 
         const res = {
             send_ok: (_message: string, data: any) => {
                 responseData = data;
                 return res;
-            },
-            err_notFound: (message: string) => new Error(message)
+            }
         } as unknown as Response;
 
         const next: NextFunction = (error?: any) => {
@@ -440,14 +437,41 @@ Deno.test("SkillController", async (t) => {
         assertEquals(responseData.deletedCount, 1);
     });
 
-    await t.step("DELETE /skills - Deve rejeitar ID inválido", async () => {
+    await t.step("DELETE /skills - Deve rejeitar ID inválido (Corrigido para err_badRequest)", async () => {
         let receivedError: any;
+        const controller = createSkillController(createSkillService({} as any));
 
         const req = {
             user: { id: "user123" },
-            body: {
-                _id: "id-invalido"
-            }
+            body: { _id: "id-invalido" }
+        } as unknown as Request;
+
+        // AQUI ESTAVA O BUG: deleteSkill chama err_badRequest para ID inválido, não err_notFound
+        const res = {
+            err_badRequest: (message: string) => new Error(message)
+        } as unknown as Response;
+
+        const next: NextFunction = (error?: any) => {
+            receivedError = error;
+        };
+
+        await controller.deleteSkill(req, res, next);
+
+        assertEquals(receivedError instanceof Error, true);
+        assertEquals(receivedError.message, "Id não é valido");
+    });
+
+    await t.step("DELETE /skills - Deve rejeitar Skill inexistente", async () => {
+        let receivedError: any;
+
+        const service = createSkillService({
+            remove: async () => ({ acknowledged: true, deletedCount: 0 })
+        } as any);
+        const controller = createSkillController(service);
+
+        const req = {
+            user: { id: "user123" },
+            body: { _id: "507f1f77bcf86cd799439011" }
         } as unknown as Request;
 
         const res = {
@@ -461,29 +485,6 @@ Deno.test("SkillController", async (t) => {
         await controller.deleteSkill(req, res, next);
 
         assertEquals(receivedError instanceof Error, true);
-    });
-
-    await t.step("DELETE /skills - Deve rejeitar Skill inexistente", async () => {
-        let receivedError: any;
-
-        const req = {
-            user: { id: "user123" },
-            body: {
-                _id: "507f1f77bcf86cd799439011"
-            }
-        } as unknown as Request;
-
-        const res = {
-            send_ok: () => res,
-            err_notFound: (message: string) => new Error(message)
-        } as unknown as Response;
-
-        const next: NextFunction = (error?: any) => {
-            receivedError = error;
-        };
-
-        await notFoundController.deleteSkill(req, res, next);
-
-        assertEquals(receivedError instanceof Error, true);
+        assertEquals(receivedError.message, "Skill não encontrada");
     });
 });

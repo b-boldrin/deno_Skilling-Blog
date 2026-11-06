@@ -6,7 +6,7 @@ import mongoose from "mongoose"
 type UserRepository = typeof userRepository;
 
 export const createUserService = (
-    repository: Pick<
+    repository: Partial<Pick<
         UserRepository,
         | "findAll"
         | "getByEmail"
@@ -14,15 +14,15 @@ export const createUserService = (
         | "removeById"
         | "getLastPasswordByIdAndEmail"
         | "updatePassword"
-    > = userRepository 
+    >> = userRepository 
 ) => {
 
     const getAllUsers = async () => {
-        return await repository.findAll();
+        return await repository.findAll!();
     };
 
     const getUser = async (userData: UserData) => {
-        const user = await repository.getByEmail(userData.email);
+        const user = await repository.getByEmail!(userData.email);
 
         if (!user) return false;
 
@@ -35,11 +35,11 @@ export const createUserService = (
 
         userData.password = hashedPassword;
 
-        return await repository.create(userData, session);
+        return await repository.create!(userData, session);
     };
 
     const removeUserById = async (id: string, session?: mongoose.mongo.ClientSession) => {
-        return await repository.removeById(id, session);
+        return await repository.removeById!(id, session);
     };
 
     const updateUserPassword = async (
@@ -51,7 +51,7 @@ export const createUserService = (
         }
     ) => {
 
-        const lastPassword = await repository.getLastPasswordByIdAndEmail(
+        const lastPassword = await repository.getLastPasswordByIdAndEmail!(
             userData._id,
             userData.email
         );
@@ -80,7 +80,7 @@ export const createUserService = (
 
         const hashedPassword = await bcrypt.hash(userData.newPassword, 12);
 
-        return await repository.updatePassword({
+        return await repository.updatePassword!({
             ...userData,
             password: hashedPassword
         });

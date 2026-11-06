@@ -10,10 +10,10 @@ export type CheckLoginResult =
     | { isPasswordValid: false; token?: undefined };
 
 export const createAuthService = (
-    repository: Pick<UserRepository, "getByEmail"> = userRepository
+    repository:Partial<Pick<UserRepository, "getByEmail">> = userRepository
 ) => {
     const checkLogin = async (userData: UserData): Promise<CheckLoginResult> => {
-        const user = await repository.getByEmail(userData.email);
+        const user = await repository.getByEmail!(userData.email);
 
         if (!user) {
             return { isPasswordValid: false };

@@ -13,8 +13,11 @@ export const createUserController = (
         
         const isDbConnected = mongoose.connection.readyState === 1;
         const session = isDbConnected ? await mongoose.startSession() : undefined;
-
+        
         try {
+
+
+
             const execute = async (currSession?: mongoose.mongo.ClientSession) => {
                 const newUser = await userService.createUser(req.body, currSession);
 

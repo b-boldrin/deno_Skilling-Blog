@@ -1,5 +1,8 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals, assertExists } from "jsr:@std/assert";
+import bcrypt from "bcrypt";
+import mongoose from "mongoose";
 import { createAuthController } from "../../controllers/authController.ts";
+import { createAuthService } from "../../services/authService.ts";
 
 const createMockRes = () => {
     const res: Record<string, unknown> = {
@@ -23,42 +26,42 @@ const createMockRes = () => {
 };
 
 Deno.test("AuthController", async (t) => {
-    await t.step("POST /login - Deve realizar login com sucesso e retornar token", async () => {
-        const mockAuthService = {
-            checkLogin: async () => ({
-                isPasswordValid: true as const,
-                token: "jwt_token_valido_123"
-            })
-        } as any;
+    const hashedPassword = await bcrypt.hash("123", 10);
 
-        const controller = createAuthController(mockAuthService);
+    await t.step("POST /login - Deve realizar login com sucesso e retornar token", async () => {
+        // Mock apenas do método getByEmail do repositório
+        const authService = createAuthService({
+            getByEmail: async (email: string) => ({
+                _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439011"),
+                username: "bruno",
+                email,
+                password: hashedPassword
+            } as any)
+        });
+
+        const controller = createAuthController(authService);
         const req = {
             body: { email: "bruno@email.com", password: "123" }
         } as any;
         const res = createMockRes() as any;
         let nextError: unknown = null;
-        const next = (err?: unknown) => {
-            nextError = err;
-        };
+        const next = (err?: unknown) => { nextError = err; };
 
         await controller.login(req, res, next);
 
         assertEquals(nextError, null);
         assertEquals(res.statusCode, 200);
         assertEquals(res.message, "Login realizado com sucesso");
-        assertEquals(res.data, { token: "jwt_token_valido_123" });
+        assertExists((res.data as { token: string }).token);
     });
 
     await t.step("POST /login - Deve rejeitar requisição sem email", async () => {
-        const controller = createAuthController({} as any);
-        const req = {
-            body: { password: "123" }
-        } as any;
+        const authService = createAuthService({} as any);
+        const controller = createAuthController(authService);
+        const req = { body: { password: "123" } } as any;
         const res = createMockRes() as any;
         let nextError: unknown = null;
-        const next = (err?: unknown) => {
-            nextError = err;
-        };
+        const next = (err?: unknown) => { nextError = err; };
 
         await controller.login(req, res, next);
 
@@ -69,15 +72,12 @@ Deno.test("AuthController", async (t) => {
     });
 
     await t.step("POST /login - Deve rejeitar requisição sem senha", async () => {
-        const controller = createAuthController({} as any);
-        const req = {
-            body: { email: "bruno@email.com" }
-        } as any;
+        const authService = createAuthService({} as any);
+        const controller = createAuthController(authService);
+        const req = { body: { email: "bruno@email.com" } } as any;
         const res = createMockRes() as any;
         let nextError: unknown = null;
-        const next = (err?: unknown) => {
-            nextError = err;
-        };
+        const next = (err?: unknown) => { nextError = err; };
 
         await controller.login(req, res, next);
 
@@ -87,22 +87,18 @@ Deno.test("AuthController", async (t) => {
         });
     });
 
-    await t.step("POST /login - Deve rejeitar credenciais inválidas (401)", async () => {
-        const mockAuthService = {
-            checkLogin: async () => ({
-                isPasswordValid: false as const
-            })
-        } as any;
+    await t.step("POST /login - Deve rejeitar quando e-mail não existe (401)", async () => {
+        const authService = createAuthService({
+            getByEmail: async () => null
+        });
 
-        const controller = createAuthController(mockAuthService);
+        const controller = createAuthController(authService);
         const req = {
-            body: { email: "bruno@email.com", password: "senha_errada" }
+            body: { email: "naoexiste@email.com", password: "123" }
         } as any;
         const res = createMockRes() as any;
         let nextError: unknown = null;
-        const next = (err?: unknown) => {
-            nextError = err;
-        };
+        const next = (err?: unknown) => { nextError = err; };
 
         await controller.login(req, res, next);
 
@@ -112,26 +108,29 @@ Deno.test("AuthController", async (t) => {
         });
     });
 
-    await t.step("POST /login - Deve repassar erro inesperado para o next", async () => {
-        const unexpectedError = new Error("Falha no banco de dados");
-        const mockAuthService = {
-            checkLogin: async () => {
-                throw unexpectedError;
-            }
-        } as any;
+    await t.step("POST /login - Deve rejeitar quando a senha está incorreta (401)", async () => {
+        const authService = createAuthService({
+            getByEmail: async (email: string) => ({
+                _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439011"),
+                username: "bruno",
+                email,
+                password: hashedPassword
+            } as any)
+        });
 
-        const controller = createAuthController(mockAuthService);
+        const controller = createAuthController(authService);
         const req = {
-            body: { email: "bruno@email.com", password: "123" }
+            body: { email: "bruno@email.com", password: "senha_errada" }
         } as any;
         const res = createMockRes() as any;
         let nextError: unknown = null;
-        const next = (err?: unknown) => {
-            nextError = err;
-        };
+        const next = (err?: unknown) => { nextError = err; };
 
         await controller.login(req, res, next);
 
-        assertEquals(nextError, unexpectedError);
+        assertEquals(nextError, {
+            status: 401,
+            message: "Credenciais inválidas"
+        });
     });
 });

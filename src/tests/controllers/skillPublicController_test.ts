@@ -1,19 +1,22 @@
-
 import { assertEquals } from "jsr:@std/assert";
-
-import type {
-    Request,
-    Response,
-    NextFunction
-} from "npm:express";
-
+import mongoose from "mongoose";
+import type { Request, Response, NextFunction } from "npm:express";
 import { createSkillController } from "../../controllers/skillController.ts";
 import { createSkillService } from "../../services/skillService.ts";
-import { skillRepositoryMock } from "../mocks/skillRepositoryMock.ts";
 
 Deno.test("SkillPublicController", async (t) => {
-
-    const service = createSkillService(skillRepositoryMock);
+    const service = createSkillService({
+        findAllPublic: async (_page?: number) => [
+            {
+                _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439011"),
+                title: "Aprendendo Deno",
+                content: "Conteúdo sobre Deno",
+                tags: ["deno", "typescript"],
+                author: "user123",
+                isPublic: true
+            } as any
+        ]
+    } as any);
     const controller = createSkillController(service);
 
     await t.step("GET /skills/public - Deve listar Skills públicas", async () => {

@@ -19,6 +19,7 @@ export const createSkillController =
                 
                 if (res.locals.targetSkill.isPublic === false) {
                     if (req.user.id === res.locals.targetSkill.author){
+                        console.log(req.user.id, res.locals.targetSkill.author)
                         return res.send_ok("Skill Encontrada:", res.locals.targetSkill)
                     }
                     return next(res.err_unauthorized("Você não tem permissão para acessar essa skill"))
@@ -148,7 +149,7 @@ export const createSkillController =
     ) => {
         try {
             if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
-                return next(res.err_notFound("Id não é valido", {expected_format: { _id: "Id da Skill"}, received: req.body}));
+                return next(res.err_badRequest("Id não é valido", {expected_format: { _id: "Id da Skill"}, received: req.body}));
             }
 
             req.body.authorId = req.user.id!;
@@ -177,7 +178,7 @@ export const createSkillController =
             }
 
             req.body.authorId = req.user.id!;
-
+            console.log(req.body)
             const updatedSkill = await skillService.updateSkill(req.body);
 
             if (updatedSkill.matchedCount === 0) {

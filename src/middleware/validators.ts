@@ -52,8 +52,13 @@ rc.addRule('tags', {
 });
 
 rc.addRule('username', {
-  validator: (value : string) => isness.fullName(value),
+  validator: (value : string) => isFilled(value),
   message: 'O Username é obrigatório'
+});
+
+rc.addRule('password', {
+  validator: (value : string) => isFilled(value),
+  message: 'A Senha é obrigatória'
 });
 
 rc.addRule('email', {
@@ -91,22 +96,21 @@ export function validatorDeleteSkill(req : Request, res : Response, next : NextF
     return next(res.err_badRequest('Erro de validação', errors));
   }
 
+
   next();
 }
 
-export function validatorCreateUser(req : Request, res : Response, next : NextFunction) {
-  const { username, email } = req.body;
+export function validatorUserSign(req : Request, res : Response, next : NextFunction) {
+  const { username, email, password} = req.body;
     
     const errors = rc.check(
     { username },
-    { email }
+    { email }, {password}
     );
 
   if (errors) {
-    return next(res.err_badRequest('Erro de validação', errors));
+    return next(res.err_badRequest('Erro de validação', {errors, expected_format: {username: "seuNickName", email: "endereco@email.com", "password":"passwd"}, received: req.body }));
   }
 
   next();
 }
-
-
