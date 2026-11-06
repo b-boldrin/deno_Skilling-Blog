@@ -84,6 +84,10 @@ Skills (`/skills`)
 
 Para mais informações dos endpoints [API Wiki](./docs/Deno%20API.md)
 
+Se preferir, temos o nosso arquivo [Postman Collections](./API/postman-docs.json)
+
+> OBS: É recomendado não levar o postman como fonte da verdade, a wiki mais atual é a [API Wiki](./API%20Wiki.md), o postman é apenas um facilitador
+
 ---
 
 ### Testes Automatizados

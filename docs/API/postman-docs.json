@@ -1,0 +1,340 @@
+{
+  "info": {
+    "_postman_id": "b68ce14a-cf61-4170-8bf6-9a2225bc7651",
+    "name": "Skills & Users API",
+    "description": "## Skills Collection\n\nCollection para gerenciamento de skills agênticas de usuários. Permite criar, consultar, atualizar e excluir skills, além de listar skills públicas disponíveis para todos.\n\n---\n\n## Autenticação\n\nA maioria dos endpoints exige autenticação via **Bearer Token**. O token é obtido após o login e deve ser armazenado na variável ou enviado no header `Authorization`.\n\n| Endpoint | Path | Method | Autenticação |\n| --- | --- | --- | --- |\n| List Public | `/skills/public` | GET | Não requerida |\n| List Own | `/skills` | GET | Bearer Token |\n| Find By Id | `/skills?skillId=$id` | GET | Opcional (Obrigatória se for privada) |\n| Create | `/skills` | POST | Bearer Token |\n| Update | `/skills` | PATCH | Bearer Token |\n| Delete | `/skills` | DELETE | Bearer Token |\n\n---\n\n## Endpoints — Skills\n\n### `GET /skills/public` — List Public Skills\n\nRetorna todas as skills públicas da plataforma, paginadas. Não requer autenticação.\n\n**Query Parameters:**\n\n| Parâmetro | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `page` | number | Não | Número da página (padrão: `1`) |\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Skills Encontradas:\",\n  \"data\": [\n    {\n      \"_id\": \"6aec6fff9ccc05ebced5ee1c\",\n      \"title\": \"My First Skill\",\n      \"tags\": [\"dev\"],\n      \"author\": {\n        \"_id\": \"6aeb6d83ee98859ad87bf216\",\n        \"username\": \"b-boldrin\"\n      },\n      \"isPublic\": true,\n      \"updatedAt\": \"2026-11-05T12:01:03.717Z\"\n    }\n  ]\n}\n\n ```\n\n---\n\n### `GET /skills` — List Own Skills\n\nRetorna as skills do usuário autenticado. Aceita paginação e um filtro opcional por ID.\n\n**Query Parameters:**\n\n| Parâmetro | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `page` | number | Não | Número da página (padrão: `1`) |\n| `skillId` | string | Não | Filtra o resultado por ID da skill |\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Skills Encontradas:\",\n  \"data\": [\n    {\n      \"_id\": \"6aec6fff9ccc05ebced5ee1c\",\n      \"title\": \"My First Skill\",\n      \"tags\": [\"dev\"],\n      \"author\": \"6aeb6d83ee98859ad87bf216\",\n      \"isPublic\": true,\n      \"updatedAt\": \"2026-11-05T12:01:03.717Z\"\n    }\n  ]\n}\n\n ```\n\n**Resposta 401:** `401 Unauthorized`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 401,\n  \"status\": \"UNAUTHORIZED\",\n  \"message\": \"Token expirado\"\n}\n\n ```\n\n---\n\n### `GET /skills?skillId=$id` — Find Skill By Id\n\nBusca uma skill específica pelo seu ID, usando o parâmetro `skillId`.\n\n**Query Parameters:**\n\n| Parâmetro | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `skillId` | string | Sim | ID da skill alvo |\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Skill Encontrada:\",\n  \"data\": {\n    \"_id\": \"6aecc447e2fccab91371bd2c\",\n    \"tags\": [\n      \"dev\",\n      \"joke\"\n    ],\n    \"title\": \"My First Skill\",\n    \"content\": \"Tell the user a short, clever programming joke. Keep it light and fun\",\n    \"author\": \"6aecc447e2fccab91371bd2b\",\n    \"isPublic\": true,\n    \"createdAt\": \"2026-11-05T18:00:39.522Z\",\n    \"updatedAt\": \"2026-11-05T18:00:39.522Z\",\n    \"__v\": 0\n  }\n}\n\n ```\n\n**Resposta 401:** `401 Unauthorized`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 401,\n  \"status\": \"UNAUTHORIZED\",\n  \"message\": \"Você não tem permissão para acessar essa skill\"\n}\n\n ```\n\n**Resposta 404:** `404 Not Found`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 404,\n  \"status\": \"NOT_FOUND\",\n  \"message\": \"Id não é valido\",\n  \"errors\": {\n    \"received\": \"6aedb36690fa734c97b023fa\"\n  }\n}\n\n ```\n\n---\n\n### `POST /skills` — Create\n\nCria uma nova skill para o usuário autenticado.\n\n**Request Body (JSON):**\n\n``` json\n{\n  \"title\": \"Nome da skill\",\n  \"content\": \"Conteúdo ou descrição da skill\",\n  \"isPublic\": true,\n  \"tags\": [\"dev\"]\n}\n\n ```\n\n| Campo | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `title` | string | Sim | Título da skill |\n| `content` | string | Sim | Conteúdo/instrução da skill |\n| `isPublic` | boolean | Não | Define se a skill é pública ou privada |\n| `tags` | array | Sim | Lista de tags para categorização |\n\n**Resposta 201:** `201 Created`\n\n``` json\n{\n  \"status\": \"CREATED\",\n  \"code\": 201,\n  \"success\": true,\n  \"message\": \"Skill criada com sucesso!\",\n  \"data\": {\n    \"tags\": [\n      \"Dev\"\n    ],\n    \"title\": \"My Best Skill\",\n    \"content\": \"Tell the user a short, clever programming joke. Keep it light and fun.\",\n    \"author\": \"6aeb6d83ee98859ad87bf216\",\n    \"isPublic\": true,\n    \"_id\": \"6aedd631acf43b693f7a5a44\",\n    \"createdAt\": \"2026-11-06T13:29:21.299Z\",\n    \"updatedAt\": \"2026-11-06T13:29:21.299Z\",\n    \"__v\": 0\n  }\n}\n\n ```\n\n**Resposta 400:** `400 Bad Request`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 400,\n  \"status\": \"BAD_REQUEST\",\n  \"message\": \"Erro de validação\",\n  \"errors\": {\n    \"errors\": [\n      {\n        \"field\": \"tags\",\n        \"message\": \"O campo tags é obrigatório\"\n      }\n    ],\n    \"expected_format\": {\n      \"title\": \"Titulo da Minha Skill\",\n      \"content\": \"Conteúdo que será repassado para o agente\",\n      \"isPublic\": \"true or false\",\n      \"tags\": [\n        \"desenvolvimento\"\n      ]\n    },\n    \"received\": {\n      \"title\": \"My Best Skill\",\n      \"content\": \"Tell the user a short, clever programming joke. Keep it light and fun.\"\n    }\n  }\n}\n\n ```\n\n---\n\n### `PATCH /skills` — Update Skill\n\nAtualiza os dados de uma skill existente. O campo `_id` identifica qual skill será alterada.\n\n**Request Body (JSON):**\n\n``` json\n{\n  \"_id\": \"6aec74934afb1e5805309188\",\n  \"title\": \"Novo título\",\n  \"content\": \"Novo conteúdo\",\n  \"isPublic\": true,\n  \"tags\": [\"dev\"]\n}\n\n ```\n\n| Campo | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `_id` | string | Sim | ID da skill a ser atualizada |\n| `title` | string | Não | Novo título da skill |\n| `content` | string | Não | Novo conteúdo da skill |\n| `isPublic` | boolean | Não | Visibilidade da skill |\n| `tags` | array | Não | Novas tags |\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Skill Editada com sucesso\",\n  \"data\": {\n    \"acknowledged\": true,\n    \"modifiedCount\": 1,\n    \"upsertedId\": null,\n    \"upsertedCount\": 0,\n    \"matchedCount\": 1\n  }\n}\n\n ```\n\n**Resposta 400:** `400 Bad Request`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 400,\n  \"status\": \"BAD_REQUEST\",\n  \"message\": \"Erro de validação\",\n  \"errors\": [\n    {\n      \"field\": \"_id\",\n      \"message\": \"O campo _id é obrigatório\"\n    }\n  ]\n}\n\n ```\n\n**Resposta 404:** `404 Not Found`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 404,\n  \"status\": \"NOT_FOUND\",\n  \"message\": \"Id não é valido\",\n  \"errors\": {\n    \"expected_format\": {\n      \"_id\": \"Id da Skill\"\n    },\n    \"received\": {\n      \"_id\": \"6aedd650acf43dsdsb693f7a5a45\",\n      \"title\": \"New Title\",\n      \"content\": \"Tell the user a short, clever programming joke. Keep it light and fun.\",\n      \"isPublic\": true,\n      \"tags\": [\n        \"dev\"\n      ]\n    }\n  }\n}\n\n ```\n\n---\n\n### `DELETE /skills` — Delete Skill\n\nRemove uma skill pelo seu ID.\n\n**Request Body (JSON):**\n\n``` json\n{\n  \"_id\": \"6aec6fff9ccc05ebced5ee1c\"\n}\n\n ```\n\n| Campo | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `_id` | string | Sim | ID da skill a ser excluída |\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Skill deletada\",\n  \"data\": {\n    \"acknowledged\": true,\n    \"deletedCount\": 1\n  }\n}\n\n ```\n\n**Resposta 400:** `400 Bad Request`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 400,\n  \"status\": \"BAD_REQUEST\",\n  \"message\": \"Id não é valido\",\n  \"errors\": {\n    \"expected_format\": {\n      \"_id\": \"Id da Skill\"\n    },\n    \"received\": {\n      \"_id\": \"dsda/;gkldfhgdfuhvjcxnjczxnk\"\n    }\n  }\n}\n\n ```\n\n**Resposta 404:** `404 Not Found`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 404,\n  \"status\": \"NOT_FOUND\",\n  \"message\": \"Skill não encontrada\",\n  \"errors\": {\n    \"expected_format\": {\n      \"_id\": \"Id da Skill\"\n    },\n    \"received\": {\n      \"_id\": \"6aedd650acf43b693f7a5a45\",\n      \"authorId\": \"6aeb6d83ee98859ad87bf216\"\n    }\n  }\n}\n\n ```\n\n---\n\n## Users Collection\n\nCollection para gerenciamento de usuários. Permite criar, listar, atualizar e excluir perfis.\n\n| Endpoint | Path | Method | Autenticação |\n| --- | --- | --- | --- |\n| Sign Up | `/users` | POST | Não requerida |\n| Sign In | `/login` | POST | Não requerida |\n| List Users | `/users` | GET | Não requerida |\n| Change Password | `/users` | PATCH | Bearer Token |\n| Delete Himself | `/users` | DELETE | Bearer Token |\n\n---\n\n## Endpoints — Users\n\n### `GET /users` — List Users\n\nRetorna os usernames dos usuários criados na collection.\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Usuários Encontrados:\",\n  \"data\": [\n    {\n      \"username\": \"bbruno-boldrin\"\n    },\n    {\n      \"username\": \"bruno-boldrin\"\n    },\n    {\n      \"username\": \"b-boldrin\"\n    }\n  ]\n}\n\n ```\n\n---\n\n### `POST /users` — Sign Up\n\nCria a conta do usuário na collection.\n\n**Request Body (JSON):**\n\n``` json\n{\
+n  \"username\": \"b-boldrin\",\n  \"email\": \"endereco@email.com\",\n  \"password\": \"passwd\"\n}\n\n ```\n\n| Campo | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `username` | string | Sim | Nome do Perfil |\n| `email` | string | Sim | Email |\n| `password` | string | Sim | Senha |\n\n**Resposta 201:** `201 Created`\n\n``` json\n{\n  \"status\": \"CREATED\",\n  \"code\": 201,\n  \"success\": true,\n  \"message\": \"Usuário criado com sucesso\",\n  \"data\": {\n    \"_id\": \"6aede3874ee5f3509cc6e06b\",\n    \"username\": \"b-boldrin\",\n    \"email\": \"endereco@email.com\"\n  }\n}\n\n ```\n\n**Resposta 400:** `400 Bad Request`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 400,\n  \"status\": \"BAD_REQUEST\",\n  \"message\": \"Erro de validação\",\n  \"errors\": {\n    \"errors\": [\n      {\n        \"field\": \"email\",\n        \"message\": \"O campo email é obrigatório\"\n      },\n      {\n        \"field\": \"password\",\n        \"message\": \"O campo password é obrigatório\"\n      }\n    ],\n    \"expected_format\": {\n      \"username\": \"seuNickName\",\n      \"email\": \"endereco@email.com\",\n      \"password\": \"passwd\"\n    },\n    \"received\": {\n      \"username\": \"b-boldrin\"\n    }\n  }\n}\n\n ```\n\n**Resposta 409:** `409 Conflict`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 409,\n  \"status\": \"CONFLICT\",\n  \"message\": \"E-mail ou username já cadastrado\",\n  \"errors\": {\n    \"received\": {\n      \"username\": \"b-boldrin\",\n      \"email\": \"endereco@email.com\"\n    }\n  }\n}\n\n ```\n\n---\n\n### `POST /login` — Sign In\n\nEntra na conta do usuário na collection (Retorna um Token).\n\n**Request Body (JSON):**\n\n``` json\n{\n  \"username\": \"b-boldrin\",\n  \"email\": \"endereco@email.com\",\n  \"password\": \"passwd\"\n}\n\n ```\n\n| Campo | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `username` | string | Sim | Nome do Perfil |\n| `email` | string | Sim | Email |\n| `password` | string | Sim | Senha |\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Login realizado com sucesso\",\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhZWRlMzg3NGVlNWYzNTA5Y2M2ZTA2YiIsImlhdCI6MTc5Mzk3NjYxNCwiZXhwIjoxNzkzOTc3NTE0fQ.BIz-AwuW4sLMLZDz-nCinfXUcBQHran_NhJfsS_y0fo\"\n  }\n}\n\n ```\n\n**Resposta 400:** `400 Bad Request`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 400,\n  \"status\": \"BAD_REQUEST\",\n  \"message\": \"Erro de validação\",\n  \"errors\": {\n    \"errors\": [\n      {\n        \"field\": \"password\",\n        \"message\": \"O campo password é obrigatório\"\n      }\n    ],\n    \"expected_format\": {\n      \"username\": \"seuNickName\",\n      \"email\": \"endereco@email.com\",\n      \"password\": \"passwd\"\n    },\n    \"received\": {\n      \"username\": \"b-boldrin\",\n      \"email\": \"endereco@email.com\"\n    }\n  }\n}\n\n ```\n\n**Resposta 401:** `401 Unauthorized`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 401,\n  \"status\": \"UNAUTHORIZED\",\n  \"message\": \"Credenciais inválidas\"\n}\n\n ```\n\n---\n\n### `PATCH /users` — Change Password\n\nPermite atualizar a senha do usuário por uma nova.\n\n**Request Body (JSON):**\n\n``` json\n{\n  \"email\": \"endereco@email.com\",\n  \"password\": \"senhaAntiga\",\n  \"newPassword\": \"senhaNova\"\n}\n\n ```\n\n| Campo | Tipo | Obrigatório | Descrição |\n| --- | --- | --- | --- |\n| `email` | string | Sim | Email do usuário |\n| `password` | string | Sim | Senha antiga |\n| `newPassword` | string | Sim | Senha nova |\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Senha atualizada com sucesso\"\n}\n\n ```\n\n**Resposta 400:** `400 Bad Request`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 400,\n  \"status\": \"BAD_REQUEST\",\n  \"message\": \"A senha antiga não confere\",\n  \"errors\": {\n    \"received\": {\n      \"password\": \"passwd\",\n      \"newPassword\": \"senhaNova\"\n    }\n  }\n}\n\n ```\n\n**Resposta 404:** `404 Not Found`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 404,\n  \"status\": \"NOT_FOUND\",\n  \"message\": \"Usuário não encontrado\",\n  \"errors\": {\n    \"expected_format\": {\n      \"email\": \"endereco@email.com\",\n      \"password\": \"senhaAntiga\",\n      \"newPassword\": \"senhaNova\"\n    },\n    \"received\": {\n      \"email\": \"enderecoNaoExistente@email.com\",\n      \"password\": \"passwd\",\n      \"newPassword\": \"senhaNova\"\n    }\n  }\n}\n\n ```\n\n---\n\n### `DELETE /users` — Delete User Account\n\nRemove a conta do usuário junto com todas as skills atreladas a ele.\n\n**Não requer Request Body (JSON).**\n\n**Resposta 200:** `200 Ok`\n\n``` json\n{\n  \"status\": \"OK\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Usuário deletado com sucesso\",\n  \"data\": {\n    \"acknowledged\": true,\n    \"deletedCount\": 1\n  }\n}\n\n ```\n\n**Resposta 404:** `404 Not Found`\n\n``` json\n{\n  \"success\": false,\n  \"code\": 404,\n  \"status\": \"NOT_FOUND\",\n  \"message\": \"Usuário não encontrado\",\n  \"errors\": {\n    \"received\": {\n      \"_id\": \"6aede3874ee5f3509cc6e06b\"\n    },\n    \"possible_resolution\": \"Verifique se o Token foi expirado\"\n  }\n}\n\n ```",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59459099",
+    "_collection_link": "https://go.postman.co/collection/59459099-b68ce14a-cf61-4170-8bf6-9a2225bc7651?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"b-boldrin\",\n    \"email\": \"endereco@email.com\",\n    \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sign In (Login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.data.token);",
+                  "    console.log(\"Token salvo com sucesso!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"endereco@email.com\",\n    \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"endereco@email.com\",\n    \"password\": \"{{password}}\",\n    \"newPassword\": \"{{new_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Himself",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Skills",
+      "item": [
+        {
+          "name": "List Public Skills",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/skills/public?page=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skills",
+                "public"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Own Skills",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/skills?page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skills"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Find Skill By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/skills?skillId=6aec6fff9ccc05ebced5ee1c",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skills"
+              ],
+              "query": [
+                {
+                  "key": "skillId",
+                  "value": "6aec6fff9ccc05ebced5ee1c"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Skill",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Nome da skill\",\n    \"content\": \"Conteúdo ou descrição da skill\",\n    \"isPublic\": true,\n    \"tags\": [\"dev\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/skills",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skills"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Skill",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"_id\": \"6aec74934afb1e5805309188\",\n    \"title\": \"Novo título\",\n    \"content\": \"Novo conteúdo\",\n    \"isPublic\": true,\n    \"tags\": [\"dev\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/skills",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skills"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Skill",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"_id\": \"6aec6fff9ccc05ebced5ee1c\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/skills",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "skills"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
