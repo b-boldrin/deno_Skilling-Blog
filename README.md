@@ -1,4 +1,5 @@
-# Deno Backend - Skilling Blog
+# 🦕 Deno Backend - Skilling Blog 📖
+![Deno](https://img.shields.io/badge/Deno-000000?style=flat&logo=deno&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white) ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=flat&logo=mongoose&logoColor=white)
 
 
 ### Tecnologias Utilizadas
@@ -48,13 +49,14 @@ mongo_connection_test_url=mongodb://localhost:27017/skills_db
 JWT_SECRET=sua_chave_secreta_super_segura
 ```
 
+4. Inicie o Servidor Backend
 ```bash
 deno task load
 ```
+> Porta Padrão: 8000
 
 ### Endpoints da API
 ---
-
 Autenticação (`/login`)
 
 | Método | Rota | Descrição | Auth |
@@ -80,6 +82,18 @@ Skills (`/skills`)
 | `PATCH` | `/skills` | Atualiza título, conteúdo, tags ou visibilidade (`isPublic`) de uma skill do autor. | Sim |
 | `DELETE` | `/skills` | Remove uma skill pertencente ao usuário autenticado. | Sim |
 
+Para mais informações dos endpoints [API Wiki](./docs/Deno%20API.md)
+
 ---
+
+### Testes Automatizados
+
+Para mais informações sobre as rotas testadas [Test Wiki](./docs/Test%20Wiki.md)
+
+Para rodar os testes
+```bash
+deno task test
+```
+
 
 
