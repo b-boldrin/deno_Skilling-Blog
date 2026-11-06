@@ -30,9 +30,6 @@ export const createUserService = (
     };
 
     const createUser = async (userData: UserData, session?: mongoose.mongo.ClientSession) => {
-
-
-
         
         const hashedPassword = await bcrypt.hash(userData.password, 12);
 
@@ -41,8 +38,8 @@ export const createUserService = (
         return await repository.create(userData, session);
     };
 
-    const removeUserById = async (id: string) => {
-        return await repository.removeById(id);
+    const removeUserById = async (id: string, session?: mongoose.mongo.ClientSession) => {
+        return await repository.removeById(id, session);
     };
 
     const updateUserPassword = async (

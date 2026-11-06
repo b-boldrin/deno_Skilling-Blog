@@ -41,8 +41,8 @@ export const create = async (
         email: newUser.email
     };
 };
-export const removeById = async (id : string) => {
-    const deletedUser = await User.deleteOne({_id: id});
+export const removeById = async (id : string, session? : mongoose.mongo.ClientSession) => {
+    const deletedUser = session ? await User.deleteOne({_id: id}, {session}) :  await User.deleteOne({_id: id})
 
     return deletedUser;
 };

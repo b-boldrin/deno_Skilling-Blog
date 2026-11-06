@@ -10,10 +10,28 @@ export const createSkillController =
             next: NextFunction
         ) => {
             try {
+
+
+
+            const skillId = req.query.skillId
+            
+            if (skillId !== undefined && res.locals.targetSkill) {
+                
+                if (res.locals.targetSkill.isPublic === false) {
+                    if (req.user.id === res.locals.targetSkill.author){
+                        return res.send_ok("Skill Encontrada:", res.locals.targetSkill)
+                    }
+                    return next(res.err_unauthorized("Você não tem permissão para acessar essa skill"))
+                }
+                else {
+                    return res.send_ok("Skill Encontrada:", res.locals.targetSkill)
+                }
+            }
+
             const page = Number(req.query.page ?? 1);
 
             if (!Number.isInteger(page) || page < 1) {
-                return next(res.err_badRequest("Paginação inválida"));
+                return next(res.err_badRequest("Paginação inválida", {expected: "?page=$number", received:  "?page=" + req.query.page}));
             }
 
             const skills = await skillService.getAllMySkills(
@@ -28,16 +46,59 @@ export const createSkillController =
         }
     };
 
+    const findSkillById = async (
+            req: Request,
+            res: Response,
+            next: NextFunction
+        ) => {
+            try {
+
+            const skillIdBefore = String(req.query.skillId)
+          
+            if (skillIdBefore === undefined) {
+                return next('route')
+            }
+
+            const skillId = new mongoose.Types.ObjectId(skillIdBefore);
+        
+
+            if (!mongoose.Types.ObjectId.isValid(skillId)) {
+                return next(res.err_notFound("Id não é valido", {expected_format: "?skillId=$_id", received: "?skillId=" + req.query.skillId}));
+            }
+
+            const findSkill = await skillService.findSkillById(skillId)
+
+            if (!findSkill) {
+                return next(res.err_notFound("Id não é valido", {received: skillId}));
+            }
+
+            if (findSkill.isPublic === false){
+                res.locals.targetSkill = findSkill
+                return next('route')
+            }
+
+            return res.send_ok("Skill Encontrada:", findSkill);
+            
+
+        } catch (err) {
+            return next(err);
+        }
+    };
+
+
     const getAllPublicSkills = async (
         req: Request,
         res: Response,
         next: NextFunction
     ) => {
         try {
+
+                
+
             const page = Number(req.query.page ?? 1);
 
             if (!Number.isInteger(page) || page < 1) {
-                return next(res.err_badRequest("Paginação inválida"));
+                return next(res.err_badRequest("Paginação inválida", {expected: "?page=$number", received:  "?page=" + req.query.page}));
             }
 
             const skills = await skillService.getAllPublicSkills(page);
@@ -64,13 +125,12 @@ export const createSkillController =
                 req.body.tags.length === 0
                 ) {
                 return next(
-                    res.err_badRequest("Campos obrigatórios não informados")
-                );
+                    res.err_badRequest("Campos obrigatórios não informados",{expected_format: {title: "Titulo da Minha Skill", content: "Conteúdo que será repassado para o agente", isPublic: false, tags: ["desenvolvimento"]}, received: req.body})                );
             }
 
             const newSkill = await skillService.createSkill(req.body);
 
-            return res.send_created(newSkill);
+            return res.send_created("Skill criada com sucesso!", newSkill);
 
         } catch (err) {
             return next(err);
@@ -84,7 +144,7 @@ export const createSkillController =
     ) => {
         try {
             if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
-                return next(res.err_notFound("Skill não encontrada"));
+                return next(res.err_notFound("Id não é valido", {expected_format: { _id: "Id da Skill"}, received: req.body}));
             }
 
             req.body.authorId = req.user.id!;
@@ -92,10 +152,10 @@ export const createSkillController =
             const deletedSkill = await skillService.removeSkill(req.body);
 
             if (deletedSkill.deletedCount === 0) {
-                return next(res.err_notFound("Skill não encontrada"));
+                return next(res.err_notFound("Skill não encontrada", {expected_format: { _id: "Id da Skill"}, received: req.body}));
             }
 
-            return res.send_ok(deletedSkill);
+            return res.send_ok("Skill deletada", deletedSkill);
 
         } catch (err) {
             return next(err);
@@ -109,7 +169,7 @@ export const createSkillController =
     ) => {
         try {
             if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
-                return next(res.err_notFound("Skill não encontrada"));
+                return next(res.err_notFound("Id não é valido", {expected_format: { _id: "Id da Skill"}, received: req.body}));
             }
 
             req.body.authorId = req.user.id!;
@@ -117,10 +177,10 @@ export const createSkillController =
             const updatedSkill = await skillService.updateSkill(req.body);
 
             if (updatedSkill.matchedCount === 0) {
-                return next(res.err_notFound("Skill não encontrada"));
+                return next(res.err_notFound("Skill não encontrada", {expected_format: { _id: "Id da Skill"}, received: req.body}));
             }
 
-            return res.send_ok("Skill Editada com sucesso");
+            return res.send_ok("Skill Editada com sucesso", updatedSkill);
 
         } catch (err) {
             return next(err);
@@ -132,7 +192,8 @@ export const createSkillController =
         getAllPublicSkills,
         createSkill,
         deleteSkill,
-        updateSkill
+        updateSkill,
+        findSkillById
     };
 };
 

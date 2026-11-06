@@ -58,17 +58,45 @@ export const createUserController = (
     };
 
     const deleteHimselfUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
-        try {
-            const userId = req.user!.id;
-            const deletedUser = await userService.removeUserById(userId);
 
-            if (!deletedUser || deletedUser.deletedCount === 0) {
-                return next(res.err_notFound("Usuário não encontrado", {received: {_id: userId } , possible_resolution: "Troque o token de acesso"}));
+
+        const isDbConnected = mongoose.connection.readyState === 1;
+        const session = isDbConnected ? await mongoose.startSession() : undefined;
+
+        try {
+           const userId = req.user!.id;
+            
+
+           const execute = async (currSession?: mongoose.mongo.ClientSession) => {
+                const deletedUser = await userService.removeUserById(userId, currSession);
+
+                if (!deletedUser || deletedUser.deletedCount === 0) {
+                    return next(res.err_notFound("Usuário não encontrado", {received: {_id: userId } , possible_resolution: "Troque o token de acesso"}));
+                }
+                
+                
+                if (isDbConnected || skillService !== skillServiceDefault) {
+                    await skillService.deleteAllSkillsForAuthorId(userId, currSession);
+                }
+
+                return res.send_ok("Usuário deletado com sucesso", deletedUser)
             }
 
-            return res.send_ok("Usuário deletado com sucesso", deletedUser);
+            if (session) {
+                await session.withTransaction(async () => {
+                    await execute(session);
+                });
+            } else {
+                await execute();
+            }
+
+            
         } catch (err) {
             return next(err);
+        } finally {
+                        if (session) {
+                await session.endSession();
+            }
         }
     };
 

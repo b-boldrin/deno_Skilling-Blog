@@ -59,8 +59,22 @@ export const remove = async (skillData : getSkillData) => {
     return deletedSkill;
 };
 
+export const removeMany = async (authorId : string,  session? : mongoose.mongo.ClientSession) => {
+    const deletedSkill = session ? await Skill.deleteMany({author: authorId},{session}) : await Skill.deleteMany({author: authorId});
+
+    return deletedSkill;
+};
+
 export const update = async (skillData : getSkillData) => {
     const updatedSkill = await Skill.updateOne({_id: skillData._id, author: skillData.authorId}, { $set: {title: skillData.title, isPublic: skillData.isPublic || false,  content: skillData.content, tags: skillData.tags } });
 
     return updatedSkill;
+}
+
+export const findSkillById = async (skillId : mongoose.Types.ObjectId) => {
+    
+    const targetSkill = await Skill.findById(skillId)
+    
+
+    return targetSkill;
 }

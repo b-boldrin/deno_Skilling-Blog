@@ -16,9 +16,11 @@ export const createSkillService = (
         SkillRepository,
         | "findAllByUserId"
         | "findAllPublic"
+        | "findSkillById"
         | "create"
         | "remove"
         | "update"
+        | "removeMany"
     > = skillRepository) => {
 
     const getAllMySkills = async (userId: string, page?: number) => {
@@ -39,8 +41,17 @@ export const createSkillService = (
       return await repository.remove(skillData);
     };
 
+    const deleteAllSkillsForAuthorId = async (authorId : string, session? : mongoose.mongo.ClientSession) => {
+      return await repository.removeMany(authorId, session);
+    };
+
     const updateSkill = async (skillData : SkillData) => {  
       return await repository.update(skillData);
+    } 
+
+    const findSkillById = async (skillId : mongoose.Types.ObjectId) => {  
+
+      return await repository.findSkillById(skillId);
     } 
 
     return {
@@ -48,7 +59,9 @@ export const createSkillService = (
         getAllPublicSkills,
         createSkill,
         removeSkill,
-        updateSkill
+        updateSkill,
+        findSkillById,
+        deleteAllSkillsForAuthorId
     }
   }
 
