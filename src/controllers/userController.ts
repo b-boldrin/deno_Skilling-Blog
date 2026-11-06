@@ -10,7 +10,7 @@ export const createUserController = (
     skillService = skillServiceDefault
 ) => {
     const createUser = async (req: Request, res: Response, next: NextFunction) => {
-        // Verifica se há uma conexão real ativa com o MongoDB (readyState === 1)
+        
         const isDbConnected = mongoose.connection.readyState === 1;
         const session = isDbConnected ? await mongoose.startSession() : undefined;
 
@@ -19,7 +19,7 @@ export const createUserController = (
                 const newUser = await userService.createUser(req.body, currSession);
 
                 if (newUser === false) {
-                    return next(res.err_conflict("E-mail ou username já cadastrado", {username: req.body.username, email: req.body.email}));
+                    return next(res.err_conflict("E-mail ou username já cadastrado", {received: {username: req.body.username, email: req.body.email}}));
                 }
 
                 const skillData: sendSkillData = {
@@ -30,7 +30,7 @@ export const createUserController = (
                     isPublic: true
                 };
 
-                // Executa o skillService se o banco estiver conectado OU se um mock foi injetado no teste
+                
                 if (isDbConnected || skillService !== skillServiceDefault) {
                     await skillService.createSkill(skillData, currSession);
                 }
@@ -47,7 +47,7 @@ export const createUserController = (
             }
         } catch (err: unknown) {
             if (typeof err === "object" && err !== null && "code" in err && (err as { code: number }).code === 11000) {
-                return next(res.err_conflict("E-mail ou username já cadastrado", {username: req.body.username, email: req.body.email}));
+                return next(res.err_conflict("E-mail ou username já cadastrado", {received: {username: req.body.username, email: req.body.email}}));
             }
             return next(err);
         } finally {
@@ -63,7 +63,7 @@ export const createUserController = (
             const deletedUser = await userService.removeUserById(userId);
 
             if (!deletedUser || deletedUser.deletedCount === 0) {
-                return next(res.err_notFound("Usuário não encontrado", {_id: userId, possible_resolution: "Troque o token de acesso"}));
+                return next(res.err_notFound("Usuário não encontrado", {received: {_id: userId } , possible_resolution: "Troque o token de acesso"}));
             }
 
             return res.send_ok("Usuário deletado com sucesso", deletedUser);
@@ -83,11 +83,11 @@ export const createUserController = (
             const { email, newPassword, password } = req.body;
 
             if (!email || !newPassword || !password) {
-                return next(res.err_badRequest("Campos obrigatórios não informados", {email: email, password: password, newPassword: newPassword}));
+                return next(res.err_badRequest("Campos obrigatórios não informados", {expected_format: {email: "endereco@email.com", password: "senhaAntiga", newPassword: "senhaNova"} , received: {email: email, password: password, newPassword: newPassword}}));
             }
 
             if (newPassword === password) {
-                return next(res.err_badRequest("A nova senha não pode ser igual à senha antiga", {newPassword}));
+                return next(res.err_badRequest("A nova senha não pode ser igual à senha antiga", {received: {password: req.body.password, newPassword: req.body.newPassword}}));
             }
 
             await userService.updateUserPassword({
@@ -101,14 +101,14 @@ export const createUserController = (
         } catch (err: unknown) {
             if (err instanceof Error) {
                 if (err.message === "Usuário não encontrado") {
-                    return next(res.err_notFound(err.message));
+                    return next(res.err_notFound(err.message, {expected_format: {email: "endereco@email.com", password: "senhaAntiga", newPassword: "senhaNova"} , received: {email: req.body.email, password: req.body.password, newPassword: req.body.newPassword}}));
                 }
                 if (
                     err.message === "A senha antiga não confere" ||
                     err.message === "A nova senha não pode ser igual à senha antiga" ||
                     err.message === "A nova senha não pode ser igual a senha antiga"
                 ) {
-                    return next(res.err_badRequest(err.message));
+                    return next(res.err_badRequest(err.message, {received: {password: req.body.password, newPassword: req.body.newPassword}}));
                 }
             }
             return next(err);

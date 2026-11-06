@@ -94,7 +94,7 @@ await t.step("POST /skills - Deve criar uma Skill", async () => {
     } as Request;
 
     const res = {
-        send_created: (data: any) => {
+        send_created: (_message: string, data : any) => {
             responseData = data;
             createdStatus = true;
             return res;
@@ -107,7 +107,7 @@ await t.step("POST /skills - Deve criar uma Skill", async () => {
     };
 
     await controller.createSkill(req, res, next);
-
+    
     assertEquals(createdStatus, true);
     assertEquals(responseData.title, "Aprendendo Deno");
     assertEquals(responseData.author, "user123");
@@ -281,7 +281,7 @@ await t.step("DELETE /skills - Deve excluir uma Skill", async () => {
     } as Request;
 
     const res = {
-        send_ok: (data: any) => {
+        send_ok: (_message : string, data: any) => {
             responseData = data;
             return res;
         },

@@ -72,7 +72,9 @@ export function validatorCreateSkill(req : Request, res : Response, next : NextF
     );
 
   if (errors) {
-    return next(res.err_badRequest('Erro de validação', errors));
+    return next(res.err_badRequest('Erro de validação', {errors, expected_format: {title: "Titulo da Minha Skill", 
+      content: "Conteúdo que será repassado para o agente", 
+      isPublic: "true or false", tags: ["desenvolvimento"]}, received: req.body}));
   }
 
   next();

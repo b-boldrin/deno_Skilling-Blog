@@ -49,6 +49,8 @@ export const create = async (skillData : sendSkillData, session? : mongoose.mong
     const newSkill = new Skill(skillData);
 
     session ? await newSkill.save({session}) : await newSkill.save();
+
+    return newSkill;
 };
 
 export const remove = async (skillData : getSkillData) => {
