@@ -1,4 +1,4 @@
-### Cenários Cobertos
+# Test Wiki
 
 **Como rodar os testes?**
 
