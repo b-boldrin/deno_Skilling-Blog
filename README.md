@@ -35,6 +35,10 @@ src/
 ### Pré-Requisitos e Instalação
 
 1. Baixe o Deno
+```bash
+npm install -g deno
+```
+
 2. Prepare seu Banco de Dados MongoDB (local ou Atlas) - [Acesse MongoDB](https://www.mongodb.com/try/download/community)
 3. Configure `.env` e `.env.test`
 
