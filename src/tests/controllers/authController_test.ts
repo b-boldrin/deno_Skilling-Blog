@@ -29,7 +29,7 @@ Deno.test("AuthController", async (t) => {
     const hashedPassword = await bcrypt.hash("123", 10);
 
     await t.step("POST /login - Deve realizar login com sucesso e retornar token", async () => {
-        // Mock apenas do método getByEmail do repositório
+        
         const authService = createAuthService({
             getByEmail: async (email: string) => ({
                 _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439011"),

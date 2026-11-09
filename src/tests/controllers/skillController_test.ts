@@ -446,7 +446,7 @@ Deno.test("SkillController", async (t) => {
             body: { _id: "id-invalido" }
         } as unknown as Request;
 
-        // AQUI ESTAVA O BUG: deleteSkill chama err_badRequest para ID inválido, não err_notFound
+        
         const res = {
             err_badRequest: (message: string) => new Error(message)
         } as unknown as Response;
