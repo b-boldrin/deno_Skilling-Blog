@@ -57,7 +57,7 @@ JWT_SECRET=sua_chave_secreta_super_segura
 ```bash
 deno task load
 ```
-> Porta Padrão: 8000
+> Porta Padrão: 7999
 
 ### Endpoints da API
 ---

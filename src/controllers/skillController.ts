@@ -9,9 +9,8 @@ export const createSkillController =
             res: Response,
             next: NextFunction
         ) => {
-            try {
-
-
+            
+        try {
 
             const skillId = req.query.skillId
             

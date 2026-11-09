@@ -2,7 +2,6 @@
 import mongoose from "mongoose";
 const skillSchema = new mongoose.Schema({
    
-    
     tags : {
         type: [String],
         require: true,
