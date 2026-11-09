@@ -3,7 +3,7 @@ import type { AuthRequest } from "../middleware/authValidator.ts";
 import userServiceDefault from "../services/userService.ts";
 import mongoose from "mongoose";
 import skillServiceDefault from "../services/skillService.ts";
-import type sendSkillData from "../types/SkillData.ts";
+import type SkillData from "../types/SkillData.ts";
 
 export const createUserController = (
     userService = userServiceDefault,
@@ -25,7 +25,7 @@ export const createUserController = (
                     return next(res.err_conflict("E-mail ou username já cadastrado", {received: {username: req.body.username, email: req.body.email}}));
                 }
 
-                const skillData: sendSkillData = {
+                const skillData: SkillData = {
                     author: String(newUser._id),
                     title: "My First Skill",
                     content: "Tell the user a short, clever programming joke. Keep it light and fun",

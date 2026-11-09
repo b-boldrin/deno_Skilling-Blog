@@ -1,6 +1,5 @@
 import Skill from "../models/Skill.ts";
-import sendSkillData from "../types/SkillData.ts";
-import getSkillData from "../types/SkillData.ts";
+import SkillData from "../types/SkillData.ts";
 import mongoose from "mongoose"
 
 export const findAllByUserId = async (userId: string, page?: number) => {
@@ -45,7 +44,7 @@ export const findAllPublic = async (page?: number) => {
 };
 
 
-export const create = async (skillData : sendSkillData, session? : mongoose.mongo.ClientSession) => {
+export const create = async (skillData : SkillData, session? : mongoose.mongo.ClientSession) => {
     const newSkill = new Skill(skillData);
 
     session ? await newSkill.save({session}) : await newSkill.save();
@@ -53,7 +52,7 @@ export const create = async (skillData : sendSkillData, session? : mongoose.mong
     return newSkill;
 };
 
-export const remove = async (skillData : getSkillData) => {
+export const remove = async (skillData : SkillData) => {
     const deletedSkill = await Skill.deleteOne({_id: skillData._id, author: skillData.authorId});
 
     return deletedSkill;
@@ -65,7 +64,7 @@ export const removeMany = async (authorId : string,  session? : mongoose.mongo.C
     return deletedSkill;
 };
 
-export const update = async (skillData : getSkillData) => {
+export const update = async (skillData : SkillData) => {
     const updatedSkill = await Skill.updateOne({_id: skillData._id, author: skillData.authorId}, { $set: {title: skillData.title, isPublic: skillData.isPublic || false,  content: skillData.content, tags: skillData.tags } });
 
     return updatedSkill;

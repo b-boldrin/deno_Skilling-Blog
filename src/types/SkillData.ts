@@ -1,7 +1,7 @@
 
 import type { Types } from "npm:mongoose";
 
-interface SkillData {
+export default interface SkillData {
     _id?: string | Types.ObjectId;
     author?: string;
     authorId?: string;
@@ -11,11 +11,5 @@ interface SkillData {
     isPublic?: boolean;
 }
 
-
-
-export default interface sendSkillData extends SkillData {}
-
-
-export default interface getSkillData extends SkillData {}
 
 
