@@ -82,7 +82,7 @@ Skills (`/skills`)
 | `PATCH` | `/skills` | Atualiza título, conteúdo, tags ou visibilidade (`isPublic`) de uma skill do autor. | Sim |
 | `DELETE` | `/skills` | Remove uma skill pertencente ao usuário autenticado. | Sim |
 
-Para mais informações dos endpoints [API Wiki](./docs/Deno%20API.md)
+Para mais informações dos endpoints [API Wiki](/docs/API%20Wiki.md)
 
 Se preferir, temos o nosso arquivo [Postman Collections](./API/postman-docs.json)
 
@@ -95,7 +95,7 @@ password    : suaSenhaPrincipal
 newPassword : suaNovaSenha      - adicione caso queira trocar
 ```
 
-> OBS: É recomendado não levar o postman como fonte da verdade, a wiki mais atual é a [API Wiki](./API%20Wiki.md), o postman é apenas um facilitador
+> OBS: É recomendado não levar o postman como fonte da verdade, a wiki mais atual é a [API Wiki](./docs/API%20Wiki.md), o postman é apenas um facilitador
 
 ---
 
